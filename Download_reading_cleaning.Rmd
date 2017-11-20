@@ -20,6 +20,10 @@ rest_inspection = GET("https://data.cityofnewyork.us/resource/9w7m-hzhe.csv") %>
 
 ```{r}
 download.file("https://www1.nyc.gov/assets/doh/downloads/excel/episrv/2015_CHP_PUD.xlsx", mode="wb", destfile = "health.xlsx")
-health <- read_excel("health.xlsx", sheet = "CHP_all_data") 
+health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>% 
+  select(Name, Racewhite_Rate, Raceblack_rate, Raceasian_rate, 
+         Racehispanic_rate, Raceother_rate, Poverty, Unemployment,
+         Smoking, Sugary_Drink, Fruit_Veg, Exercise,
+         Obesity, Diabetes, Stroke_Hosp)
 ```
 
