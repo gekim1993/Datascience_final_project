@@ -1,0 +1,30 @@
+---
+title: "Zip_code_scrapping"
+author: "Leiyu Yue"
+date: "11/20/2017"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(httr)
+library(janitor)
+```
+
+
+```{r}
+url = "https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm"
+zip_code_xml = read_html(url) %>% 
+  html_nodes("#content > table") %>% 
+  html_table() %>% 
+  data.frame() %>% 
+  clean_names() %>% 
+  separate(., zip_codes, into = c("zip_codes", "zip_codes2", "zip_codes3"), sep = ",") %>% 
+  gather(., key = neighborhood1, value = zip_codes, zip_codes:zip_codes3) %>% 
+  select(., - neighborhood1) %>% 
+  arrange(., neighborhood, zip_codes)
+```
+
+
