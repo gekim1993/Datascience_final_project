@@ -1,0 +1,25 @@
+---
+title: "Reading_dataset"
+author: "Junting Ren Uni:jr3755"
+date: "November 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(httr)
+library(readxl)
+```
+
+```{r reading the New York Inspection data}
+rest_inspection = GET("https://data.cityofnewyork.us/resource/9w7m-hzhe.csv") %>% 
+  content("parsed")
+```
+
+```{r}
+download.file("https://www1.nyc.gov/assets/doh/downloads/excel/episrv/2015_CHP_PUD.xlsx", mode="wb", destfile = "health.xlsx")
+health <- read_excel("health.xlsx", sheet = "CHP_all_data") 
+```
+
