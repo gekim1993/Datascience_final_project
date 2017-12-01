@@ -8,5 +8,13 @@ output: html_document
 
 ```{r}
 rest_neighbourhood = left_join(rest_inspection, zip_code_xml, by = "zip_codes")
+
+##calculating percentage neighbourhood is na
+mean(is.na(rest_neighbourhood$neighborhood))
+##taking out distinct zipcodes with missing neighbourhood name
+rest_neighbourhood %>% 
+  select(zip_codes, neighborhood) %>% 
+  filter(is.na(neighborhood)) %>% 
+  distinct()
 ```
 
