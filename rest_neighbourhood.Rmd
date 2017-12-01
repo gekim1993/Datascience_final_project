@@ -1,0 +1,12 @@
+---
+title: "link zipcode with neighbourhood"
+author: "Leiyu Yue"
+date: "12/1/2017"
+output: html_document
+---
+
+
+```{r}
+rest_neighbourhood = left_join(rest_inspection, zip_code_xml, by = "zip_codes")
+```
+

@@ -11,11 +11,14 @@ library(tidyverse)
 library(rvest)
 library(httr)
 library(readxl)
+library(data.table)
 ```
 
 ```{r reading the New York Inspection data}
 rest_inspection = GET("https://data.cityofnewyork.us/resource/9w7m-hzhe.csv") %>% 
-  content("parsed")
+  content("parsed") %>% 
+  setnames(., "zipcode", "zip_codes")
+  
 ```
 
 ```{r}
