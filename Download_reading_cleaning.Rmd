@@ -73,7 +73,7 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
-## Percentage of fast food restaurant in different neighborhood (approached by cuisine type)
+## Percentage of fast food restaurant in different boro/neighborhood (approached by cuisine type)
 
 ```{r defining_fastfood}
 rest_inspection %>%
@@ -82,7 +82,7 @@ rest_inspection %>%
   count(cuisine_description)
 ```
 
-```{r counting_fastfood}
+```{r counting_fastfood_boro}
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
 
 n_rest = function(name_boro){
@@ -140,6 +140,72 @@ percent_fastfood = function(name_boro){
 
 map(name_boro, percent_fastfood) %>%
   bind_rows()
+```
+
+```{r counting_fastfood_neighborhood}
+neighborhood_list = 
+  rest_neighborhood %>%
+  distinct(neighborhood) %>%
+  arrange(neighborhood)
+  
+name_neighborhood = 
+
+n_rest_neighborhood = function(name_neighborhood){
+  
+  rest_each_neighborhood =
+    rest_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis)
+  
+  n_rest_neighborhood = nrow(rest_each_neighborhood)
+
+  n_rest_neighborhood    
+} 
+
+rest_fastfood_neighborhood = 
+  rest__neighborhood %>%
+  filter(cuisine_description %in% c("Bagels/Pretzels",
+                                    "Bottled beverages, including water, sodas, juices, etc.",
+                                    "Chicken",
+                                    "Delicatessen",
+                                    "Donuts",
+                                    "Hamburgers",
+                                    "Hotdogs",
+                                    "Hotdogs/Pretzels",
+                                    "Ice Cream, Gelato, Yogurt, Ices",
+                                    "Nuts/Confectionary",
+                                    "Pancakes/Waffles",
+                                    "Pizza",
+                                    "Soul Food",
+                                    "Sandwiches",
+                                    "Sandwiches/Salads/Mixed Buffet",
+                                    "Soups & Sandwiches"))
+
+n_fastfood_neighborhood = function(name_neighborhood){
+  
+  rest_fastfood_distinct_neighborhood = 
+    rest_fastfood_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis, cuisine_description)
+  
+  n_fastfood_neighborhood = nrow(rest_fastfood_distinct_neighborhood)
+  
+  n_fastfood_neighborhood
+}
+
+percent_fastfood_neighborhood = function(name_neighborhood){
+  
+  percent_fastfood_neighborhood = n_fastfood_neighborhood(name_neighborhood)/n_rest_neighborhood(name_neighborhood)
+  
+  tibble(
+    neighborhood = name_neighborhood,
+    percent_fastfood = percent_fastfood_neighborhood
+  )
+}
+
+map(name_neighborhood, percent_fastfood_neighborhood) %>%
+  bind_rows()
+
 ```
 
 ## Percentage of inspection grades in different boroughs
@@ -395,7 +461,7 @@ lm(stroke_hosp ~ chain_percentage, data = health_chain_join) %>%
 zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
   mutate(zipcode = as.character(zipcode))
 ##restaurant data with neighbourhood
-rest_neighbourhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
+rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
   filter(!is.na(neighborhood))
 ```
 
