@@ -183,11 +183,32 @@ data =
   mutate(grade_percent = n / sum(n)) %>% 
   filter(grade == "A")
 
-data1 = health filter(name == "Manhattan", "Bronx")
+combined = 
+  left_join(data, health_boro, by = "boro") %>% 
+  filter(boro!="Missing")
 
 ```
+First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.
+```{r}
+reg1 <- lm(obesity ~ grade_percent, data = combined )
+summary(reg1)
+broom::tidy(reg1)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.
+```{r}
+reg2 <- lm(diabetes ~ grade_percent, data = combined )
+summary(reg2)
+broom::tidy(reg2)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.
+```{r}
+reg3 <- lm(stroke_hosp ~ grade_percent, data = combined )
+summary(reg3)
+broom::tidy(reg3)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.
 
-
+According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
 <<<<<<< HEAD
 
 ## Percentage of 
