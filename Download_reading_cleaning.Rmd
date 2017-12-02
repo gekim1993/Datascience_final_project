@@ -119,6 +119,8 @@ health_only_neighborhood %>%
 ## Percentage of fast food restaurant in different boro/neighborhood (approached by cuisine type)
 
 ```{r defining_fastfood}
+# Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
+
 rest_inspection %>%
   mutate(dba = str_to_upper(dba)) %>%
   arrange(cuisine_description) %>%
@@ -126,6 +128,8 @@ rest_inspection %>%
 ```
 
 ```{r counting_fastfood_boro}
+# calculating the taotal number of restaurants and the number of fastfood restaurants in the boro, as well as the percentage of fastfood restaurants.
+
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
 
 n_rest = function(name_boro){
@@ -177,6 +181,8 @@ percent_fastfood = function(name_boro){
   
   tibble(
     boro = name_boro,
+    n_fastfood = n_fastfood(name_boro),
+    n_rest = n_rest(name_boro),
     percent_fastfood = percent_fastfood
   )
 }
@@ -184,6 +190,16 @@ percent_fastfood = function(name_boro){
 fastfood_boro = 
   map(name_boro, percent_fastfood) %>%
   bind_rows()
+
+# summary for restaurant data for neighborhood
+
+fastfood_boro %>%
+  mutate(boro = as.factor(boro),
+         boro = fct_relevel(boro, n_fastfood)) %>%
+  ggplot(aes(x = boro, y = n_fastfood)) +
+  geom_bar(stat = "count")
+
+# combine the dataset with health data and run linear simple regression models
 
 health_boro = 
   health %>%
@@ -204,6 +220,8 @@ lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
 ```
 
 ```{r counting_fastfood_neighborhood}
+# calculating the taotal number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
+
 neighborhood_list = 
   rest_neighborhood %>%
   distinct(neighborhood) %>%
@@ -258,6 +276,8 @@ percent_fastfood_neighborhood = function(name_neighborhood){
   
   tibble(
     neighborhood = name_neighborhood,
+    n_fastfood = n_fastfood_neighborhood(name_neighborhood),
+    n_rest = n_rest_neighborhood(name_neighborhood),
     percent_fastfood = percent_fastfood_neighborhood
   )
 }
@@ -266,6 +286,12 @@ fastfood_neighborhood =
   map(neighborhood_list$neighborhood, percent_fastfood_neighborhood) %>%
   bind_rows() %>%
   mutate(neighborhood = str_to_upper(neighborhood))
+
+# summary for restaurant data for neighborhood
+
+
+
+# combine the dataset with health data and run linear simple regression models
 
 health_neighborhood = 
   health %>%
