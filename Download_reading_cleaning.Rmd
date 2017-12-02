@@ -70,6 +70,8 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
+## Percentage of fast food restaurant in different neighborhood (approached by cuisine type)
+
 ```{r defining_fastfood}
 rest_inspection %>%
   mutate(dba = str_to_upper(dba)) %>%
@@ -107,7 +109,9 @@ rest_fastfood =
                                     "Pancakes/Waffles",
                                     "Pizza",
                                     "Soul Food",
-                                    "Sandwiches"))
+                                    "Sandwiches",
+                                    "Sandwiches/Salads/Mixed Buffet",
+                                    "Soups & Sandwiches"))
 
 n_fastfood = function(name_boro){
   
@@ -135,9 +139,49 @@ map(name_boro, percent_fastfood) %>%
   bind_rows()
 ```
 
-##Percentage of grade A restaurant in different neighborhood
-```{r}
+## Healthy food restaurant in different neighborhood (Intuitively approached by cuisine type)
 
+```{r healthy_restaurant}
+rest_inspection %>%
+  mutate(dba = str_to_upper(dba)) %>%
+  arrange(cuisine_description) %>%
+  count(cuisine_description)
+
+rest_healthyfood = 
+  rest_inspection %>%
+  filter(cuisine_description %in% c("Fruits/Vegetables",
+                                    "Juice, Smoothies, Fruit Salads",
+                                    "Salads",
+                                    "Vegetarian",
+                                    "Soups")) 
+
+rest_healthyfood %>%
+  distinct(camis, dba, boro, cuisine_description) %>%
+  group_by(boro) %>%
+  summarize(n = n())
+
+n_healthyfood = function(name_boro){
+  
+  rest_healthyfood_distinct = 
+    rest_fastfood %>%
+    filter(boro == name_boro) %>%
+    distinct(camis, cuisine_description)
+  
+  n_healthyfood = nrow(rest_healthyfood_distinct)
+  
+  n_healthyfood
+}
+
+percent_healthyfood = function(name_boro){
+  
+  percent_healthyfood = n_healthyfood(name_boro)/n_rest(name_boro)
+  
+  tibble(
+    boro = name_boro,
+    percent_healthyfood = percent_healthyfood
+  )
+}
+
+map(name_boro, percent_healthyfood) %>%
+  bind_rows()
 ```
-
-
