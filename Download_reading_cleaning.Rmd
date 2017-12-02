@@ -55,8 +55,6 @@ url = "https://data.cityofnewyork.us/resource/9w7m-hzhe.json"
 
 rest_inspection = get_all_inspections(url) %>%
   bind_rows() 
-
-
 ```
 
 ```{r reading and cleaning the health indicator data}
@@ -72,49 +70,69 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
-
 ```{r defining_fastfood}
 rest_inspection %>%
-  mutate(dba = str_to_upper(dba),
-         dba = str_replace(dba, "//'", "")) %>%
-  distinct(dba, cuisine_description) %>%
-  arrange(dba)
-  
-  group_by(cuisine_description) %>%
-  summarise(n = n())
-
-rest_inspection %>%
-  distinct(dba, cuisine_description) %>%
-  arrange(dba)
-
-Bagels/Pretzels
-Bottled beverages, including water, sodas, juices, etc.
-Donuts
-Hamburgers
-Hotdogs
-Ice Cream, Gelato, Yogurt, Ices
-Pizza
-Chicken
-
-rest_inspection %>%
-  filter(cuisine_description == "Chicken") %>%
-  distinct(dba)
-
+  mutate(dba = str_to_upper(dba)) %>%
+  arrange(cuisine_description) %>%
+  count(cuisine_description)
 ```
 
 ```{r counting_fastfood}
-rest_inspection %>%
+name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
+
+n_rest = function(name_boro){
+  
+  rest_boro =
+    rest_inspection %>%
+    filter(boro == name_boro) %>%
+    distinct(camis)
+  
+  n_rest = nrow(rest_boro)
+
+  n_rest    
+} 
+
+rest_fastfood = 
+  rest_inspection %>%
   filter(cuisine_description %in% c("Bagels/Pretzels",
                                     "Bottled beverages, including water, sodas, juices, etc.",
                                     "Chicken",
+                                    "Delicatessen",
                                     "Donuts",
                                     "Hamburgers",
                                     "Hotdogs",
+                                    "Hotdogs/Pretzels",
                                     "Ice Cream, Gelato, Yogurt, Ices",
-                                    "Pizza")
-         ) %>%
-  group_by(boro, ) %>%
-  summarise(n_fastfood = n())
+                                    "Nuts/Confectionary",
+                                    "Pancakes/Waffles",
+                                    "Pizza",
+                                    "Soul Food",
+                                    "Sandwiches"))
+
+n_fastfood = function(name_boro){
+  
+  rest_fastfood_distinct = 
+    rest_fastfood %>%
+    filter(boro == name_boro) %>%
+    distinct(camis, cuisine_description)
+  
+  n_fastfood = nrow(rest_fastfood_distinct)
+  
+  n_fastfood
+}
+
+percent_fastfood = function(name_boro){
+  
+  percent_fastfood = n_fastfood(name_boro)/n_rest(name_boro)
+  
+  tibble(
+    boro = name_boro,
+    percent_fastfood = percent_fastfood
+  )
+}
+
+map(name_boro, percent_fastfood) %>%
+  bind_rows()
 ```
 
 ##Percentage of grade A restaurant in different neighborhood
