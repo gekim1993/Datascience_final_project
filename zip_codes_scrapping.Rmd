@@ -26,8 +26,9 @@ zip_code_xml = read_html(url) %>%
   select(., - neighborhood1) %>% 
   mutate(zip_codes = as.integer(zip_codes)) %>% 
   rename(zipcode = zip_codes) %>% 
-  mutate(zipcode = as.character(zipcode))
-
+  mutate(zipcode = as.character(zipcode)) %>% 
+  filter(!is.na(zipcode))
+  
  zip_code_xml <- rbind(zip_code_xml, c("/","Carroll Gardens", "11231"))
  zip_code_xml <- rbind(zip_code_xml, c("/","Midwood", "11230"))
  zip_code_xml <- rbind(zip_code_xml, c("/","Forest Hills", "11373"))
