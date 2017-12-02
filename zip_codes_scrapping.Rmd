@@ -24,9 +24,49 @@ zip_code_xml = read_html(url) %>%
   separate(., zip_codes, into = c("zip_codes", "zip_codes2", "zip_codes3"), sep = ",") %>% 
   gather(., key = neighborhood1, value = zip_codes, zip_codes:zip_codes3) %>% 
   select(., - neighborhood1) %>% 
-  mutate(zip_codes = as.integer(zip_codes)) %>% 
-  arrange(., neighborhood, zip_codes)
+<<<<<<< HEAD
+  mutate(zip_codes = as.integer(zip_codes))
 
+ zip_code_xml <- rbind(zip_code_xml, c("/","Carroll Gardens", "11231"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midwood", "11230"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Forest Hills", "11373"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Manhattan Beach", "11235"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Oakland Gardens", "11364"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Inwood and Washington Heights", "10034"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Chelsea and Clinton", "10019"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Ozone Park", "11417"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10022"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Northwest Brooklyn", "11217"))  zip_code_xml <- rbind(zip_code_xml, c("/","Chelsea and Clinton", "10036"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Belle Harbor", "11694")) 
+ zip_code_xml <- rbind(zip_code_xml, c("/","Ridgewood", "11385"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11435"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Astoria", "11106"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Upper West Side", "10168"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10112"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11434"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Woodhaven", "11421"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Prospect Heights", "11238"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10111"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Upper East Side", "10128"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Lower Manhattan", "10007"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Richmond Hill", "11418"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Upper East Side", "10065"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Ozone Park", "11420"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Great Kills", "10312"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Williamsburg", "11249"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Jackson Heights", "11372"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Woodside", "11377"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Soundview Bruckner", "10472"))
+ 
+ 
+ 
+ 
+ arrange(., neighborhood, zip_codes)
+
+=======
+  arrange(., neighborhood, zip_codes) %>% 
+  rename(zipcode = zip_codes)
+>>>>>>> 710250a345304b17956b14675db13850f3670b07
 ```
 
 

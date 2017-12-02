@@ -1,6 +1,6 @@
 ---
 title: "Reading_dataset"
-author: "Junting Ren Uni:jr3755"
+author: "Junting Ren"
 date: "November 20, 2017"
 output: html_document
 ---
@@ -12,25 +12,70 @@ library(rvest)
 library(httr)
 library(readxl)
 library(data.table)
+<<<<<<< HEAD
 library(stringr)
+=======
+library(janitor)
+>>>>>>> fd7738be4f2acc91c4e2cfe913ef83a352ea613a
 ```
 
 ```{r reading the New York Inspection data}
-rest_inspection = GET("https://data.cityofnewyork.us/resource/9w7m-hzhe.csv") %>% 
-  content("parsed") %>% 
-  setnames(., "zipcode", "zip_codes")
+library(tidyverse)
+library(httr)
+library(jsonlite)
+
+get_all_inspections = function(url) {
+  
+  all_inspections = vector("list", length = 0)
+  
+  loop_index = 1
+  chunk_size = 50000
+  DO_NEXT = TRUE
+  
+  while (DO_NEXT) {
+    message("Getting data, page ", loop_index)
+    
+    all_inspections[[loop_index]] = 
+      GET(url,
+          query = list(`$order` = "zipcode",
+                       `$limit` = chunk_size,
+                       `$offset` = as.integer((loop_index - 1) * chunk_size)
+                       )
+          ) %>%
+      content("text") %>%
+      fromJSON() %>%
+      as_tibble()
+    
+    DO_NEXT = dim(all_inspections[[loop_index]])[1] == chunk_size
+    loop_index = loop_index + 1
+  }
+  
+  all_inspections
+  
+}
+
+url = "https://data.cityofnewyork.us/resource/9w7m-hzhe.json"
+
+rest_inspection = get_all_inspections(url) %>%
+  bind_rows() 
+
+
+```
+
+```{r reading and cleaning the health indicator data}
+download.file("https://www1.nyc.gov/assets/doh/downloads/excel/episrv/2015_CHP_PUD.xlsx", mode="wb", destfile = "health.xlsx")
+health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>% 
+  select(Name, Racewhite_Rate, Age0to17_rate, 
+         Age18to24_rate, Age25to44_rate, Poverty, Unemployment,
+         Smoking, Exercise,
+         Obesity, Diabetes, Stroke_Hosp) %>% 
+  clean_names() %>% 
+  mutate(age0to44_rate = age0to17_rate + age18to24_rate + age25to44_rate) %>% 
+  select(-age0to17_rate, -age18to24_rate, -age25to44_rate)
   
 ```
 
-```{r}
-download.file("https://www1.nyc.gov/assets/doh/downloads/excel/episrv/2015_CHP_PUD.xlsx", mode="wb", destfile = "health.xlsx")
-health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>% 
-  select(Name, Racewhite_Rate, Raceblack_rate, Raceasian_rate, 
-         Racehispanic_rate, Raceother_rate, Poverty, Unemployment,
-         Smoking, Sugary_Drink, Fruit_Veg, Exercise,
-         Obesity, Diabetes, Stroke_Hosp)
-```
-
+<<<<<<< HEAD
 ```{r defining_fastfood}
 rest_inspection %>%
   mutate(dba = str_to_upper(dba),
@@ -74,3 +119,11 @@ rest_inspection %>%
   group_by(boro, ) %>%
   summarise(n_fastfood = n())
 ```
+=======
+##Percentage of grade A restaurant in different neighborhood
+```{r}
+
+```
+
+
+>>>>>>> fd7738be4f2acc91c4e2cfe913ef83a352ea613a
