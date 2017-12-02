@@ -148,8 +148,6 @@ neighborhood_list =
   distinct(neighborhood) %>%
   arrange(neighborhood)
   
-name_neighborhood = 
-
 n_rest_neighborhood = function(name_neighborhood){
   
   rest_each_neighborhood =
