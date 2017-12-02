@@ -72,7 +72,7 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
 
 ## Percentage of fast food restaurant in different neighborhood (approached by cuisine type)
 
-```{r defining_fastfood}
+```{r defining_fastfood, include = FALSE}
 rest_inspection %>%
   mutate(dba = str_to_upper(dba)) %>%
   arrange(cuisine_description) %>%
@@ -135,10 +135,45 @@ percent_fastfood = function(name_boro){
   )
 }
 
-map(name_boro, percent_fastfood) %>%
+fastfood_boro=
+  map(name_boro, percent_fastfood) %>%
   bind_rows()
 ```
 
+<<<<<<< .merge_file_BBNPb5
+```{r}
+health_boro =
+  health %>%
+  clean_names() %>%
+  mutate(name = str_to_upper(name)) %>%
+  rename(boro = name)
+
+combined_boro = 
+  left_join(fastfood_boro, health_boro, by = "boro")
+```
+
+Obesity ~ Percent of fast food restaurants
+
+```{r}
+lm(obesity ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+```
+
+Diabetes ~ Percent of fast food restaurants
+
+```{r}
+lm(diabetes ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+```
+
+Hospitalized Stroke ~ Percent of fast food restaurants
+
+```{r}
+lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+```
+
+=======
 ## Percentage of inspection grades in different boroughs
 ```{r grade_percentage}
 data =
@@ -167,6 +202,7 @@ data1 = health filter(name == "Manhattan", "Bronx")
 ```
 
 =======
+>>>>>>> .merge_file_nMzp6S
 ## Healthy food restaurant in different neighborhood (Intuitively approached by cuisine type)
 
 ```{r healthy_restaurant}
