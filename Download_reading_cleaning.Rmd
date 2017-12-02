@@ -12,7 +12,11 @@ library(rvest)
 library(httr)
 library(readxl)
 library(data.table)
+<<<<<<< HEAD
+library(stringr)
+=======
 library(janitor)
+>>>>>>> fd7738be4f2acc91c4e2cfe913ef83a352ea613a
 ```
 
 ```{r reading the New York Inspection data}
@@ -71,9 +75,55 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
+<<<<<<< HEAD
+```{r defining_fastfood}
+rest_inspection %>%
+  mutate(dba = str_to_upper(dba),
+         dba = str_replace(dba, "//'", "")) %>%
+  distinct(dba, cuisine_description) %>%
+  arrange(dba)
+  
+  group_by(cuisine_description) %>%
+  summarise(n = n())
+
+rest_inspection %>%
+  distinct(dba, cuisine_description) %>%
+  arrange(dba)
+
+Bagels/Pretzels
+Bottled beverages, including water, sodas, juices, etc.
+Donuts
+Hamburgers
+Hotdogs
+Ice Cream, Gelato, Yogurt, Ices
+Pizza
+Chicken
+
+rest_inspection %>%
+  filter(cuisine_description == "Chicken") %>%
+  distinct(dba)
+
+```
+
+```{r counting_fastfood}
+rest_inspection %>%
+  filter(cuisine_description %in% c("Bagels/Pretzels",
+                                    "Bottled beverages, including water, sodas, juices, etc.",
+                                    "Chicken",
+                                    "Donuts",
+                                    "Hamburgers",
+                                    "Hotdogs",
+                                    "Ice Cream, Gelato, Yogurt, Ices",
+                                    "Pizza")
+         ) %>%
+  group_by(boro, ) %>%
+  summarise(n_fastfood = n())
+```
+=======
 ##Percentage of grade A restaurant in different neighborhood
 ```{r}
 
 ```
 
 
+>>>>>>> fd7738be4f2acc91c4e2cfe913ef83a352ea613a
