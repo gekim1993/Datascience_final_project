@@ -333,8 +333,8 @@ rest_inspect_str = rest_inspection %>%
 
 # Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
 nyc_chain = 
-right_join(rest_inspect_str, chain_rest_str) %>%
-filter(!is.na(camis)) %>%
+  right_join(rest_inspect_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
   distinct(camis, dba, boro)
 
 # How many mcdonalds?
@@ -352,7 +352,7 @@ library(fuzzyjoin)
 rest_inspection_join = 
   rest_inspection %>%
   filter(!is.na(dba))
-  
+
 nyc_chain_2 = stringdist_right_join(rest_inspection_join, chain_rest, by = "dba", max_dist = 1) %>%
   filter(!is.na(camis))
 
@@ -361,7 +361,7 @@ nyc_chain_2 %>%
   distinct()
 
 nyc_chain_2 %>%
- filter(str_detect(dba.x, regex("^MCDON")))
+  filter(str_detect(dba.x, regex("^MCDON")))
 
 ```
 
@@ -388,74 +388,45 @@ percent_chain = left_join(count_chain, count_rest) %>%
 ```{r combining health data with percentage of chains}
 health_join = health %>% mutate(boro = str_to_upper(name))
 health_chain_join = left_join(percent_chain, health_join, by = "boro") 
-  
+
 # function for modeling health outcome and percentage of chain restaurants
 
-# first function graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
-graphs_health = function(health){
-  health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, health)) %>%
-   ggplot(aes(boro, health, color = boro)) + geom_point()
-}  
+lm_sum = function(health_outcome){
+  graphs_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+   ggplot(aes(boro, health_outcome, color = boro)) + geom_point()
 
-# second function graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
-graphs_chain_health = function(df, health){
-  mutate(df, boro = forcats::fct_reorder(boro, health)) %>%
-  ggplot(aes(chain_percentage, obesity, color = boro)) + geom_point()
-  }
+ graphs_chain_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point()
+ 
+ reg_chain = lm(health_outcome ~ chain_percentage, data = health_chain_join) %>%
 
-# third function gives an output of the linear regression result
-reg_chain = function(health){
-  lm(health ~ chain_percentage, data = health_chain_join) %>%
-  summary()
-  }
+list(graphs_health, graphs_chain_health, reg_chain)
+# function that takes a input of column in health_chain_join and gives output of
+# 1. graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
+
+# 2. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
+
+# 3.reg_chain gives an output of the linear regression result
+}
+
 ```
 
 ```{r model obesity vs percentage of chains}
 # model obesity
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, obesity)) %>%
-   ggplot(aes(boro, obesity, color = boro)) + geom_point()
-
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, obesity)) %>%
-  ggplot(aes(chain_percentage, obesity, color = boro)) + geom_point()
-
-lm(obesity ~ chain_percentage, data = health_chain_join) %>%
-  summary()
-
-graphs_chain_health(obesity)
+lm_sum(health_chain_join$obesity)
 ```
-
 
 ```{r model diabetes vs percentage of chains}
 # model diabetes
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, diabetes)) %>%
-   ggplot(aes(boro, diabetes, color = boro)) + geom_point()
-
-health_chain_join %>%
-   mutate(boro = forcats::fct_reorder(boro, diabetes)) %>%
-  ggplot(aes(chain_percentage, diabetes, color = boro)) + geom_point()
-
-lm(diabetes ~ chain_percentage, data = health_chain_join) %>%
-  summary()
+lm_sum(health_chain_join$diabetes)
 ```
 
 ```{r model stroke vs percentage of chains}
-# model diabetes
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, stroke_hosp)) %>%
-   ggplot(aes(boro, diabetes, color = boro)) + geom_point()
-
-health_chain_join %>%
-   mutate(boro = forcats::fct_reorder(boro, stroke_hosp)) %>%
-  ggplot(aes(chain_percentage, diabetes, color = boro)) + geom_point()
-
-lm(stroke_hosp ~ chain_percentage, data = health_chain_join) %>%
-  summary()
+# model stroke
+lm_sum(health_chain_join$stroke_hosp)
 ```
-
 
 ```{r merging the neighborhood data with restaurant data}
 zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
