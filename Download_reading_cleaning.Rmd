@@ -75,6 +75,7 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
+<<<<<<< HEAD
 ##Health data exploratory in different neighborhood
 ```{r}
 health_only_neighborhood <- health[-c(1:6),] %>% 
@@ -117,6 +118,9 @@ health_only_neighborhood %>%
 
 
 ## Percentage of fast food restaurant in different neighborhood (approached by cuisine type)
+=======
+## Percentage of fast food restaurant in different boro/neighborhood (approached by cuisine type)
+>>>>>>> c02a76f5293435e6521bf915b9b78156a3922964
 
 ```{r defining_fastfood}
 rest_inspection %>%
@@ -125,7 +129,7 @@ rest_inspection %>%
   count(cuisine_description)
 ```
 
-```{r counting_fastfood}
+```{r counting_fastfood_boro}
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
 
 n_rest = function(name_boro){
@@ -185,17 +189,105 @@ map(name_boro, percent_fastfood) %>%
   bind_rows()
 ```
 
-## Percentage of inspection grades in different boroughs
-```{r grade_percentage}
-rest_inspection %>%
-  group_by(boro, grade) %>%
-  summarise(n = n()) %>%
-  mutate(grade_percent = n / sum(n))
+```{r counting_fastfood_neighborhood}
+neighborhood_list = 
+  rest_neighborhood %>%
+  distinct(neighborhood) %>%
+  arrange(neighborhood)
+  
+n_rest_neighborhood = function(name_neighborhood){
+  
+  rest_each_neighborhood =
+    rest_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis)
+  
+  n_rest_neighborhood = nrow(rest_each_neighborhood)
+
+  n_rest_neighborhood    
+} 
+
+rest_fastfood_neighborhood = 
+  rest__neighborhood %>%
+  filter(cuisine_description %in% c("Bagels/Pretzels",
+                                    "Bottled beverages, including water, sodas, juices, etc.",
+                                    "Chicken",
+                                    "Delicatessen",
+                                    "Donuts",
+                                    "Hamburgers",
+                                    "Hotdogs",
+                                    "Hotdogs/Pretzels",
+                                    "Ice Cream, Gelato, Yogurt, Ices",
+                                    "Nuts/Confectionary",
+                                    "Pancakes/Waffles",
+                                    "Pizza",
+                                    "Soul Food",
+                                    "Sandwiches",
+                                    "Sandwiches/Salads/Mixed Buffet",
+                                    "Soups & Sandwiches"))
+
+n_fastfood_neighborhood = function(name_neighborhood){
+  
+  rest_fastfood_distinct_neighborhood = 
+    rest_fastfood_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis, cuisine_description)
+  
+  n_fastfood_neighborhood = nrow(rest_fastfood_distinct_neighborhood)
+  
+  n_fastfood_neighborhood
+}
+
+percent_fastfood_neighborhood = function(name_neighborhood){
+  
+  percent_fastfood_neighborhood = n_fastfood_neighborhood(name_neighborhood)/n_rest_neighborhood(name_neighborhood)
+  
+  tibble(
+    neighborhood = name_neighborhood,
+    percent_fastfood = percent_fastfood_neighborhood
+  )
+}
+
+map(name_neighborhood, percent_fastfood_neighborhood) %>%
+  bind_rows()
 
 ```
 
+## Percentage of inspection grades in different boroughs
+```{r grade_percentage}
+data =
+  rest_inspection %>%
+  group_by(boro, grade) %>%
+  summarise(n = n()) %>%
+  mutate(grade_percent = n / sum(n)) %>% 
+  filter(grade == "A")
+```
 
-<<<<<<< HEAD
+```{r}
+combined = 
+  left_join(data, health_boro, by = "boro") %>% 
+  filter(boro!="Missing")
+```
+First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.
+```{r}
+reg1 <- lm(obesity ~ grade_percent, data = combined )
+summary(reg1)
+broom::tidy(reg1)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.
+```{r}
+reg2 <- lm(diabetes ~ grade_percent, data = combined )
+summary(reg2)
+broom::tidy(reg2)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.
+```{r}
+reg3 <- lm(stroke_hosp ~ grade_percent, data = combined )
+summary(reg3)
+broom::tidy(reg3)
+```
+p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
+According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
 
 ## Percentage of 
 ```{r}
@@ -286,8 +378,8 @@ rest_inspect_str = rest_inspection %>%
 
 # Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
 nyc_chain = 
-right_join(rest_inspect_str, chain_rest_str) %>%
-filter(!is.na(camis)) %>%
+  right_join(rest_inspect_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
   distinct(camis, dba, boro)
 
 # How many mcdonalds?
@@ -305,7 +397,7 @@ library(fuzzyjoin)
 rest_inspection_join = 
   rest_inspection %>%
   filter(!is.na(dba))
-  
+
 nyc_chain_2 = stringdist_right_join(rest_inspection_join, chain_rest, by = "dba", max_dist = 1) %>%
   filter(!is.na(camis))
 
@@ -314,7 +406,7 @@ nyc_chain_2 %>%
   distinct()
 
 nyc_chain_2 %>%
- filter(str_detect(dba.x, regex("^MCDON")))
+  filter(str_detect(dba.x, regex("^MCDON")))
 
 ```
 
@@ -341,81 +433,56 @@ percent_chain = left_join(count_chain, count_rest) %>%
 ```{r combining health data with percentage of chains}
 health_join = health %>% mutate(boro = str_to_upper(name))
 health_chain_join = left_join(percent_chain, health_join, by = "boro") 
-  
+
 # function for modeling health outcome and percentage of chain restaurants
 
-# first function graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
-graphs_health = function(health){
-  health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, health)) %>%
-   ggplot(aes(boro, health, color = boro)) + geom_point()
-}  
+lm_sum = function(health_outcome){
+  graphs_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+   ggplot(aes(boro, health_outcome, color = boro)) + geom_point()
 
-# second function graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
-graphs_chain_health = function(df, health){
-  mutate(df, boro = forcats::fct_reorder(boro, health)) %>%
-  ggplot(aes(chain_percentage, obesity, color = boro)) + geom_point()
-  }
+ graphs_chain_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point()
+ 
+ reg_chain = lm(health_outcome ~ chain_percentage, data = health_chain_join) %>%
 
-# third function gives an output of the linear regression result
-reg_chain = function(health){
-  lm(health ~ chain_percentage, data = health_chain_join) %>%
-  summary()
-  }
+list(graphs_health, graphs_chain_health, reg_chain)
+# function that takes a input of column in health_chain_join and gives output of
+# 1. graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
+
+# 2. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
+
+# 3.reg_chain gives an output of the linear regression result
+}
+
 ```
 
 ```{r model obesity vs percentage of chains}
 # model obesity
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, obesity)) %>%
-   ggplot(aes(boro, obesity, color = boro)) + geom_point()
-
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, obesity)) %>%
-  ggplot(aes(chain_percentage, obesity, color = boro)) + geom_point()
-
-lm(obesity ~ chain_percentage, data = health_chain_join) %>%
-  summary()
-
-graphs_chain_health(obesity)
+lm_sum(health_chain_join$obesity)
 ```
-
 
 ```{r model diabetes vs percentage of chains}
 # model diabetes
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, diabetes)) %>%
-   ggplot(aes(boro, diabetes, color = boro)) + geom_point()
-
-health_chain_join %>%
-   mutate(boro = forcats::fct_reorder(boro, diabetes)) %>%
-  ggplot(aes(chain_percentage, diabetes, color = boro)) + geom_point()
-
-lm(diabetes ~ chain_percentage, data = health_chain_join) %>%
-  summary()
+lm_sum(health_chain_join$diabetes)
 ```
 
 ```{r model stroke vs percentage of chains}
-# model diabetes
-health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, stroke_hosp)) %>%
-   ggplot(aes(boro, diabetes, color = boro)) + geom_point()
-
-health_chain_join %>%
-   mutate(boro = forcats::fct_reorder(boro, stroke_hosp)) %>%
-  ggplot(aes(chain_percentage, diabetes, color = boro)) + geom_point()
-
-lm(stroke_hosp ~ chain_percentage, data = health_chain_join) %>%
-  summary()
+# model stroke
+lm_sum(health_chain_join$stroke_hosp)
 ```
 
+<<<<<<< HEAD
 
 ##Analysis for restaurant data by neighborhood
+=======
+>>>>>>> c02a76f5293435e6521bf915b9b78156a3922964
 ```{r merging the neighborhood data with restaurant data}
 zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
   mutate(zipcode = as.character(zipcode))
 ##restaurant data with neighbourhood
-rest_neighbourhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
+rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
   filter(!is.na(neighborhood))
 ```
 
