@@ -62,13 +62,7 @@ zip_code_xml = read_html(url) %>%
  
  
  
- 
- arrange(., neighborhood, zip_codes)
 
-=======
-  arrange(., neighborhood, zip_codes) %>% 
-  rename(zipcode = zip_codes)
->>>>>>> 710250a345304b17956b14675db13850f3670b07
 ```
 
 
