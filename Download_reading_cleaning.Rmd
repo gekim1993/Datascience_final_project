@@ -139,6 +139,30 @@ map(name_boro, percent_fastfood) %>%
   bind_rows()
 ```
 
+## Percentage of inspection grades in different boroughs
+```{r grade_percentage}
+rest_inspection %>%
+  group_by(boro, grade) %>%
+  summarise(n = n()) %>%
+  mutate(grade_percent = n / sum(n))
+
+```
+
+
+<<<<<<< HEAD
+
+## Percentage of 
+```{r}
+
+```
+
+
+## linear regression of percentage of chain restaurants in boroughs and health 
+```{r}
+
+```
+
+=======
 ## Healthy food restaurant in different neighborhood (Intuitively approached by cuisine type)
 
 ```{r healthy_restaurant}
@@ -184,4 +208,67 @@ percent_healthyfood = function(name_boro){
 
 map(name_boro, percent_healthyfood) %>%
   bind_rows()
+>>>>>>> 1b73c81e90c21625f0dbdd19f382999e7cb062de
 ```
+
+## Matching list of chain restaurants in us and restaurant inspection data
+```{r reading_rest_chains_wiki}
+library(stringr)
+
+chains_html = read_html("https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual")
+
+chain_rest = chains_html %>%
+  html_nodes("ul:nth-child(9) li , .jquery-tablesorter tr:nth-child(1) td:nth-child(1)") %>%
+  html_text() %>%
+  as.tibble() %>%
+  mutate(dba = value, 
+         dba = str_to_upper(dba)) %>%
+  select(dba)
+# read in the list of chain restaurants in us 
+# made the names to uppercase and changed the var name to dba
+```
+
+```{r matching_with_inspection}
+# removing punctuations in chain_rest & restaurant inspections
+chain_rest_str = 
+  chain_rest  %>%
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+rest_inspect_str = rest_inspection %>% 
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+  
+nyc_chain = 
+right_join(rest_inspect_str, chain_rest_str) %>%
+filter(!is.na(camis)) %>%
+  distinct(camis, dba, boro)
+
+# How many mcdonalds?
+nyc_chain %>%
+  filter(str_detect(dba, regex("^MCDON")))
+#207
+```
+
+I think fuzzy join is worse.
+
+```{r testing fuzzy join}
+# fuzzy join
+library(fuzzyjoin)
+
+rest_inspection_join = 
+  rest_inspection %>%
+  filter(!is.na(dba))
+  
+nyc_chain_2 = stringdist_right_join(rest_inspection_join, chain_rest, by = "dba", max_dist = 1) %>%
+  filter(!is.na(camis))
+
+nyc_chain_2 %>%
+  select(dba.x, dba.y) %>%
+  distinct()
+
+nyc_chain_2 %>%
+ filter(str_detect(dba.x, regex("^MCDON")))
+
+```
+
+
+
