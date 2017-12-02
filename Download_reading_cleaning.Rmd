@@ -365,3 +365,13 @@ health_chain_join %>%
 lm(stroke_hosp ~ chain_percentage, data = health_chain_join) %>%
   summary()
 ```
+
+
+```{r merging the neighborhood data with restaurant data}
+zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
+  mutate(zipcode = as.character(zipcode))
+##restaurant data with neighbourhood
+rest_neighbourhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
+  filter(!is.na(neighborhood))
+```
+
