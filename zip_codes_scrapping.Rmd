@@ -60,10 +60,20 @@ zip_code_xml = read_html(url) %>%
  zip_code_xml <- rbind(zip_code_xml, c("/","Jackson Heights", "11372"))
  zip_code_xml <- rbind(zip_code_xml, c("/","Woodside", "11377"))
  zip_code_xml <- rbind(zip_code_xml, c("/","Soundview Bruckner", "10472"))
- 
- 
- 
-
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10020"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Central Harlem", "10037"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Lower Manhattan", "10038"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Washington Heights", "10039"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Washington Heights", "10040"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Chelsea and Clinton", "10048"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Morningside Heights", "10055"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "10057"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Upper West Side", "10069"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Upper East Side", "10075"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10103"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10104"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10105"))
+ zip_code_xml <- rbind(zip_code_xml, c("/","Midtown", "10106"))
 ```
 
 
