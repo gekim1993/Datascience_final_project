@@ -19,3 +19,20 @@ zip_code_missing =
   distinct()
 ```
 
+
+##Entering data for zipcode
+```{r}
+zip_code_xml <- rbind(zip_code_xml, c("/","Rockaways", "11697"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11451"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11436"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11433"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11430"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens Village", "11429"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens Village", "11428"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens Village", "11427"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens", "11426"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Jamaica", "11422"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens", "11419"))
+zip_code_xml <- rbind(zip_code_xml, c("/","Queens", "11413"))
+```
+
