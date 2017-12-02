@@ -19,13 +19,35 @@ library(stringr)
 library(janitor)
 library(stringr)
 library(forcats)
+library(jsonlite)
+library(viridis)
+library(plotly)
+library(Rmisc)
+library(ggplot2)
 ```
 
-```{r reading the New York Inspection data}
-library(tidyverse)
-library(httr)
-library(jsonlite)
 
+# Motivation---Tim
+
+write
+
+# Related Work---Tim
+
+write
+
+# Initial questions---Tim
+
+write
+
+# Data and Methods
+
+## Data Source and Collection---Tim
+
+write
+
+## Data Import and Cleaning---Tim
+
+```{r reading the New York Inspection data}
 get_all_inspections = function(url) {
   
   all_inspections = vector("list", length = 0)
@@ -75,8 +97,48 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
-##Health data exploratory in different neighborhood
-```{r}
+```{r merging the neighborhood data with restaurant data}
+zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
+  mutate(zipcode = as.character(zipcode))
+##restaurant data with neighbourhood
+rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
+  filter(!is.na(neighborhood))
+```
+
+
+
+# Exploratory Analysis
+
+## Health---Tim&Austin
+
+```{r boro_summary}
+explore_boro = health[c(2:6),] %>% 
+  mutate(name = as.factor(name)) %>% 
+  data.frame()
+
+
+  explore_boro %>%
+  mutate(name = fct_reorder(name,obesity)) %>% 
+  plot_ly(x = ~name, y = ~obesity, color = ~name, type = "bar")
+  # for obesity.
+
+
+  explore_boro %>% 
+  mutate(name = fct_reorder(name,diabetes)) %>%
+  plot_ly(x = ~name, y = ~diabetes, color = ~name, type = "bar")
+  # for diabetes.
+
+
+  explore_boro %>% 
+  mutate(name = fct_reorder(name,stroke_hosp)) %>%
+  plot_ly(x = ~name, y = ~stroke_hosp, color = ~name, type = "bar")
+  # for stroke.
+
+```
+
+**For obesity, Manhattan has lowerest percentage. Bronx has the highest. And there are increasing obesity percentages as the order of Queens, Brooklyn and Staten Island. For diabetes, the lowest and highest are the same as those of obesity. The difference is that the percentages of Queens and Staten Island are nearly the same and a little bit lower than that of Brooklyn. For stroke, it has the same situation with that of diabetes.**
+
+```{r neighborhood_summary}
 health_only_neighborhood <- health[-c(1:6),] %>% 
   rename(neighborhood = name) %>% 
   mutate(neighborhood = as.factor(neighborhood))
@@ -86,36 +148,27 @@ health_only_neighborhood <- health[-c(1:6),] %>%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
-<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = obesity)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-=======
   ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 25 percent more obesity rate")
 
 ###East New York and Starrett City have the highest diabetes rate, up to 17 percent
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
   filter(diabetes > 10) %>% 
-<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = diabetes)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-=======
   ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 10 percent more diabetes rate")
 
 ###BUshwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
   filter(stroke_hosp > 300) %>% 
-<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = stroke_hosp)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-=======
   ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
 
 
@@ -126,42 +179,35 @@ health_only_neighborhood %>%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, poverty)) %>% 
   filter(poverty > 20) %>% 
-<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = poverty)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-=======
   ggplot(aes(x = neighborhood,y = poverty, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 20 percent or more poverty")
 
 ###Fiancial district has the highest percent of young peoeple, up to 67%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, age0to44_rate)) %>% 
   filter(age0to44_rate > 60) %>% 
-<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = age0to44_rate)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-=======
   ggplot(aes(x = neighborhood,y = age0to44_rate, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 60 percent or more people under age 44")
 
 
 ```
 
+## Restaurant data
 
-## Percentage of fast food restaurant in different boro/neighborhood (approached by cuisine type)
+### Fastfood restaurants by cuisine type---Ruiwei
 
-```{r defining_fastfood}
+```{r cuisine_type_summary}
 # Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
 
 rest_inspection %>%
   mutate(dba = str_to_upper(dba)) %>%
   arrange(cuisine_description) %>%
   count(cuisine_description)
-```
 
-```{r counting_fastfood_boro}
 # calculating the taotal number of restaurants and the number of fastfood restaurants in the boro, as well as the percentage of fastfood restaurants.
 
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
@@ -233,27 +279,6 @@ fastfood_boro %>%
   ggplot(aes(x = boro, y = n_fastfood)) +
   geom_bar(stat = "count")
 
-# combine the dataset with health data and run linear simple regression models
-
-health_boro = 
-  health %>%
-  mutate(boro = str_to_upper(name)) %>%
-  select(-name)
-
-combined_boro = 
-  left_join(fastfood_boro, health_boro, by = "boro")
-
-lm(obesity ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
-
-lm(diabetes ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
-
-lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
-```
-
-```{r counting_fastfood_neighborhood}
 # calculating the taotal number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
 
 neighborhood_list = 
@@ -325,6 +350,183 @@ fastfood_neighborhood =
 
 
 
+```
+
+
+### Restaurant Chains---Sara
+
+```{r reading_rest_chains_wiki, matching_with_inspection, percentage_chains_boro}
+## Matching list of chain restaurants in U.S. and restaurant inspection data
+
+chains_html = read_html("https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual")
+
+chain_rest = chains_html %>%
+  html_nodes("ul:nth-child(9) li , .jquery-tablesorter tr:nth-child(1) td:nth-child(1)") %>%
+  html_text() %>%
+  as.tibble() %>%
+  mutate(dba = value, 
+         dba = str_to_upper(dba)) %>%
+  select(dba)
+# read in the list of chain restaurants in us 
+# made the names to uppercase and changed the var name to dba
+
+# removing punctuations in chain_rest & restaurant inspections
+chain_rest_str = 
+  chain_rest  %>%
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+rest_inspect_str = rest_inspection %>% 
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+# Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
+nyc_chain = 
+  right_join(rest_inspect_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, boro)
+
+# How many mcdonalds?
+nyc_chain %>%
+  filter(str_detect(dba, regex("^MCDON")))
+#207
+
+# Next is calculating the percentage of chain restaurants in each boro.
+
+# counting chains in boro
+count_chain = nyc_chain %>%
+  group_by(boro) %>%
+  summarise(chain_n = n())
+
+count_rest = rest_inspection %>%
+  distinct(boro, camis) %>%
+  group_by(boro) %>%
+  summarise(res_n = n())
+
+# calculating percentage of chains in each boro
+percent_chain = left_join(count_chain, count_rest) %>%
+  mutate(chain_percentage = chain_n/res_n)
+```
+
+### Inspection Grade---Austin 
+
+```{r grade_percentage}
+data =
+  rest_inspection %>%
+  group_by(boro, grade) %>%
+  summarise(n = n()) %>%
+  mutate(grade_percent = n / sum(n)) %>% 
+  filter(grade == "A")
+```
+
+
+# Formal Analysis and Findings
+
+## Borough level
+
+### Fastfood restaurants by cuisine type---Ruiwei
+
+```{r lm_fastfood_boro}
+# combine the dataset with health data and run linear simple regression models
+
+health_boro = 
+  health %>%
+  mutate(boro = str_to_upper(name)) %>%
+  select(-name)
+
+combined_boro = 
+  left_join(fastfood_boro, health_boro, by = "boro")
+
+lm(obesity ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+
+lm(diabetes ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+
+lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+```
+
+### Restaurant Chains---Sara
+
+```{r combining health data with percentage of chains}
+health_join = health %>% mutate(boro = str_to_upper(name))
+health_chain_join = left_join(percent_chain, health_join, by = "boro") 
+
+# function for modeling health outcome and percentage of chain restaurants
+
+lm_sum = function(health_outcome){
+  graphs_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+   ggplot(aes(boro, health_outcome, color = boro)) + geom_point()
+
+ graphs_chain_health = health_chain_join %>%
+  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
+  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point()
+ 
+ reg_chain = lm(health_outcome ~ chain_percentage, data = health_chain_join) %>%
+
+list(graphs_health, graphs_chain_health, reg_chain)
+# function that takes a input of column in health_chain_join and gives output of
+# 1. graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
+
+# 2. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
+
+# 3.reg_chain gives an output of the linear regression result
+}
+
+# model obesity
+lm_sum(health_chain_join$obesity)
+
+# The chain_percentage-health_outcome graph shows the relationship between obesity and borough's percetage of chain restaurants. It shows a slightly positive linear trend except for Brooklyn, which has the lowest percentage of health restaurants but third highest in percentage of obesity rate.
+
+# In the linear regression analysis,the p-value for the slope coeffcient, is 0.309, indicating that 0.05 significance level, there is no linear association between percentage of obesity in boroughs and their percentage of chain restaurants.
+
+# model diabetes
+lm_sum(health_chain_join$diabetes)
+
+# Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants.
+
+# model stroke
+lm_sum(health_chain_join$stroke_hosp)
+
+# Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants. 
+```
+
+
+### Inspection Grade---Austin
+
+```{r}
+combined = 
+  left_join(data, health_boro, by = "boro") %>% 
+  filter(boro!="Missing")
+
+# First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.
+
+reg1 <- lm(obesity ~ grade_percent, data = combined )
+summary(reg1)
+broom::tidy(reg1)
+
+# p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.
+
+reg2 <- lm(diabetes ~ grade_percent, data = combined )
+summary(reg2)
+broom::tidy(reg2)
+
+# p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.
+
+reg3 <- lm(stroke_hosp ~ grade_percent, data = combined )
+summary(reg3)
+broom::tidy(reg3)
+
+# p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
+# According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
+```
+
+
+## Neighborhood level
+
+### Fastfood restaurants by cuisine type---Ruiwei
+
+```{r lm_fastfood_neighborhood}
 # combine the dataset with health data and run linear simple regression models
 
 health_neighborhood = 
@@ -345,54 +547,27 @@ lm(stroke_hosp ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + s
   broom::tidy()
 ```
 
-## Percentage of inspection grades in different boroughs
-```{r grade_percentage}
-data =
-  rest_inspection %>%
-  group_by(boro, grade) %>%
-  summarise(n = n()) %>%
-  mutate(grade_percent = n / sum(n)) %>% 
-  filter(grade == "A")
+
+### Restaurant Chains---Sara
+
+```{r Restaurant_Chains_neighborhood}
 ```
 
-```{r}
-combined = 
-  left_join(data, health_boro, by = "boro") %>% 
-  filter(boro!="Missing")
-```
-First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.
-```{r}
-reg1 <- lm(obesity ~ grade_percent, data = combined )
-summary(reg1)
-broom::tidy(reg1)
-```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.
-```{r}
-reg2 <- lm(diabetes ~ grade_percent, data = combined )
-summary(reg2)
-broom::tidy(reg2)
-```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.
-```{r}
-reg3 <- lm(stroke_hosp ~ grade_percent, data = combined )
-summary(reg3)
-broom::tidy(reg3)
-```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
-According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
+### Inspection Grade---Austin
 
-## Percentage of 
-```{r}
+```{r Inspection_Grade_neighborhood}
 
 ```
 
+# Conclusion---to do later 
 
-## linear regression of percentage of chain restaurants in boroughs and health 
-```{r}
+write
 
-```
+# Discussion---to do later 
 
-## Healthy food restaurant in different neighborhood (Intuitively approached by cuisine type)
+write
+
+# additional analysis/sensitivity analysis---Ruiwei
 
 ```{r healthy_restaurant}
 rest_inspection %>%
@@ -438,190 +613,3 @@ percent_healthyfood = function(name_boro){
 map(name_boro, percent_healthyfood) %>%
   bind_rows()
 ```
-
-## Matching list of chain restaurants in U.S. and restaurant inspection data
-
-```{r reading_rest_chains_wiki}
-library(stringr)
-
-chains_html = read_html("https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual")
-
-chain_rest = chains_html %>%
-  html_nodes("ul:nth-child(9) li , .jquery-tablesorter tr:nth-child(1) td:nth-child(1)") %>%
-  html_text() %>%
-  as.tibble() %>%
-  mutate(dba = value, 
-         dba = str_to_upper(dba)) %>%
-  select(dba)
-# read in the list of chain restaurants in us 
-# made the names to uppercase and changed the var name to dba
-```
-
-```{r matching_with_inspection}
-# removing punctuations in chain_rest & restaurant inspections
-chain_rest_str = 
-  chain_rest  %>%
-  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
-
-rest_inspect_str = rest_inspection %>% 
-  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
-
-# Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-nyc_chain = 
-  right_join(rest_inspect_str, chain_rest_str) %>%
-  filter(!is.na(camis)) %>%
-  distinct(camis, dba, boro)
-
-# How many mcdonalds?
-nyc_chain %>%
-  filter(str_detect(dba, regex("^MCDON")))
-#207
-```
-
-Trying out fuzzy join but I think fuzzy join is worse.
-
-```{r testing fuzzy join}
-# fuzzy join
-library(fuzzyjoin)
-
-rest_inspection_join = 
-  rest_inspection %>%
-  filter(!is.na(dba))
-
-nyc_chain_2 = stringdist_right_join(rest_inspection_join, chain_rest, by = "dba", max_dist = 1) %>%
-  filter(!is.na(camis))
-
-nyc_chain_2 %>%
-  select(dba.x, dba.y) %>%
-  distinct()
-
-nyc_chain_2 %>%
-  filter(str_detect(dba.x, regex("^MCDON")))
-
-```
-
-Next is calculating the percentage of chain restaurants in each boro.
-
-```{r percentage_chains_boro}
-# counting chains in boro
-count_chain = nyc_chain %>%
-  group_by(boro) %>%
-  summarise(chain_n = n())
-
-count_rest = rest_inspection %>%
-  distinct(boro, camis) %>%
-  group_by(boro) %>%
-  summarise(res_n = n())
-
-# calculating percentage of chains in each boro
-percent_chain = left_join(count_chain, count_rest) %>%
-  mutate(chain_percentage = chain_n/res_n)
-```
-
-## Linear regression of health data on percentage of chain restaurants in each borough
-
-```{r combining health data with percentage of chains}
-health_join = health %>% mutate(boro = str_to_upper(name))
-health_chain_join = left_join(percent_chain, health_join, by = "boro") 
-
-# function for modeling health outcome and percentage of chain restaurants
-
-lm_sum = function(health_outcome){
-  graphs_health = health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
-   ggplot(aes(boro, health_outcome, color = boro)) + geom_point()
-
- graphs_chain_health = health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
-  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point()
- 
- reg_chain = lm(health_outcome ~ chain_percentage, data = health_chain_join) %>%
-
-list(graphs_health, graphs_chain_health, reg_chain)
-# function that takes a input of column in health_chain_join and gives output of
-# 1. graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
-
-# 2. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
-
-# 3.reg_chain gives an output of the linear regression result
-}
-
-```
-
-```{r model obesity vs percentage of chains}
-# model obesity
-lm_sum(health_chain_join$obesity)
-```
-The chain_percentage-health_outcome graph shows the relationship between obesity and borough's percetage of chain restaurants. It shows a slightly positive linear trend except for Brooklyn, which has the lowest percentage of health restaurants but third highest in percentage of obesity rate.
-
-In the linear regression analysis,the p-value for the slope coeffcient, is 0.309, indicating that 0.05 significance level, there is no linear association between percentage of obesity in boroughs and their percentage of chain restaurants.
-
-```{r model diabetes vs percentage of chains}
-# model diabetes
-lm_sum(health_chain_join$diabetes)
-```
-Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants.
-
-```{r model stroke vs percentage of chains}
-# model stroke
-lm_sum(health_chain_join$stroke_hosp)
-```
-Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants. 
-
-## Linear regression of health data on percentage of chain restaurants in each neighbourhood
-
-##Analysis for restaurant data by neighborhood
-
-```{r merging the neighborhood data with restaurant data}
-zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
-  mutate(zipcode = as.character(zipcode))
-##restaurant data with neighbourhood
-rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>% 
-  filter(!is.na(neighborhood))
-```
-<<<<<<< HEAD
-
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> c36fea8a5b240de682da850dbe3bddbf55f77937
-=======
->>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
-
-```{r}
-library(tidyverse)
-library(stringr)
-library(forcats)
-library(viridis)
-library(plotly)
-library(Rmisc)
-library(ggplot2)
-
-explore_boro = health[c(2:6),] %>% 
-  mutate(name = as.factor(name)) %>% 
-  data.frame()
-
-
-  explore_boro %>%
-  mutate(name = fct_reorder(name,obesity)) %>% 
-  plot_ly(x = ~name, y = ~obesity, color = ~name, type = "bar")
-  # for obesity.
-
-
-  explore_boro %>% 
-  mutate(name = fct_reorder(name,diabetes)) %>%
-  plot_ly(x = ~name, y = ~diabetes, color = ~name, type = "bar")
-  # for diabetes.
-
-
-  explore_boro %>% 
-  mutate(name = fct_reorder(name,stroke_hosp)) %>%
-  plot_ly(x = ~name, y = ~stroke_hosp, color = ~name, type = "bar")
-  # for stroke.
-
-```
-For obesity, Manhattan has lowerest percentage. Bronx has the highest. And there are increasing obesity percentages as the order of Queens, Brooklyn and Staten Island. For diabetes, the lowest and highest are the same as those of obesity. The difference is that the percentages of Queens and Staten Island are nearly the same and a little bit lower than that of Brooklyn. For stroke, it has the same situation with that of diabetes.
-=======
->>>>>>> 2ab930f11070c97f9f70749bca8f05feef2364b2
