@@ -24,9 +24,8 @@ zip_code_xml = read_html(url) %>%
   separate(., zip_codes, into = c("zip_codes", "zip_codes2", "zip_codes3"), sep = ",") %>% 
   gather(., key = neighborhood1, value = zip_codes, zip_codes:zip_codes3) %>% 
   select(., - neighborhood1) %>% 
-  mutate(zip_codes = as.integer(zip_codes)) %>% 
-  arrange(., neighborhood, zip_codes)
-
+  arrange(., neighborhood, zip_codes) %>% 
+  rename(zipcode = zip_codes)
 ```
 
 
