@@ -141,10 +141,14 @@ map(name_boro, percent_fastfood) %>%
 
 ## Percentage of inspection grades in different boroughs
 ```{r grade_percentage}
-rest_inspection %>%
+data =
+  rest_inspection %>%
   group_by(boro, grade) %>%
   summarise(n = n()) %>%
-  mutate(grade_percent = n / sum(n))
+  mutate(grade_percent = n / sum(n)) %>% 
+  filter(grade == "A")
+
+data1 = health filter(name == "Manhattan", "Bronx")
 
 ```
 
