@@ -81,35 +81,69 @@ health_only_neighborhood <- health[-c(1:6),] %>%
   rename(neighborhood = name) %>% 
   mutate(neighborhood = as.factor(neighborhood))
 ##Plotting for outcome in different neighborhood
+
+###Williamsbridge and Baychester have the highest obesity rate, up to 32%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
+<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = obesity)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+=======
+  ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 25 percent more obesity rate")
 
+###East New York and Starrett City have the highest diabetes rate, up to 17 percent
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
   filter(diabetes > 10) %>% 
+<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = diabetes)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+=======
+  ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 10 percent more diabetes rate")
 
+###BUshwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
   filter(stroke_hosp > 300) %>% 
+<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = stroke_hosp)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+=======
+  ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + geom_col() +  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
 
+
+
 ##Plotting for some adjusted variables
+
+###Morrisania and Crotona has the highest percent of poverty rate, up to 40%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, poverty)) %>% 
   filter(poverty > 20) %>% 
+<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = poverty)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+=======
+  ggplot(aes(x = neighborhood,y = poverty, fill = neighborhood)) + geom_col() +  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 20 percent or more poverty")
 
+###Fiancial district has the highest percent of young peoeple, up to 67%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, age0to44_rate)) %>% 
   filter(age0to44_rate > 60) %>% 
+<<<<<<< HEAD
   ggplot(aes(x = neighborhood,y = age0to44_rate)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+=======
+  ggplot(aes(x = neighborhood,y = age0to44_rate, fill = neighborhood)) + geom_col() +  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
   labs(title = "Neighborhood with 60 percent or more people under age 44")
 
 
@@ -543,3 +577,10 @@ rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>%
 ```
 
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> c36fea8a5b240de682da850dbe3bddbf55f77937
+=======
+>>>>>>> f2af75f4116094ca411f1265f574e70f603d482f
