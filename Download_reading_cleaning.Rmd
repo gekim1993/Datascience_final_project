@@ -75,7 +75,6 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
   
 ```
 
-<<<<<<< HEAD
 ##Health data exploratory in different neighborhood
 ```{r}
 health_only_neighborhood <- health[-c(1:6),] %>% 
@@ -117,10 +116,7 @@ health_only_neighborhood %>%
 ```
 
 
-## Percentage of fast food restaurant in different neighborhood (approached by cuisine type)
-=======
 ## Percentage of fast food restaurant in different boro/neighborhood (approached by cuisine type)
->>>>>>> c02a76f5293435e6521bf915b9b78156a3922964
 
 ```{r defining_fastfood}
 rest_inspection %>%
@@ -196,6 +192,15 @@ health_boro =
 
 combined_boro = 
   left_join(fastfood_boro, health_boro, by = "boro")
+
+lm(obesity ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+
+lm(diabetes ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
+
+lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
+  broom::tidy()
 ```
 
 ```{r counting_fastfood_neighborhood}
