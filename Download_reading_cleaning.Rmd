@@ -138,8 +138,17 @@ percent_fastfood = function(name_boro){
   )
 }
 
-map(name_boro, percent_fastfood) %>%
+fastfood_boro = 
+  map(name_boro, percent_fastfood) %>%
   bind_rows()
+
+health_boro = 
+  health %>%
+  mutate(boro = str_to_upper(name)) %>%
+  select(-name)
+
+combined_boro = 
+  left_join(fastfood_boro, health_boro, by = "boro")
 ```
 
 ```{r counting_fastfood_neighborhood}
@@ -161,7 +170,7 @@ n_rest_neighborhood = function(name_neighborhood){
 } 
 
 rest_fastfood_neighborhood = 
-  rest__neighborhood %>%
+  rest_neighborhood %>%
   filter(cuisine_description %in% c("Bagels/Pretzels",
                                     "Bottled beverages, including water, sodas, juices, etc.",
                                     "Chicken",
@@ -201,9 +210,27 @@ percent_fastfood_neighborhood = function(name_neighborhood){
   )
 }
 
-map(name_neighborhood, percent_fastfood_neighborhood) %>%
-  bind_rows()
+fastfood_neighborhood = 
+  map(neighborhood_list$neighborhood, percent_fastfood_neighborhood) %>%
+  bind_rows() %>%
+  mutate(neighborhood = str_to_upper(neighborhood))
 
+health_neighborhood = 
+  health %>%
+  mutate(neighborhood = str_to_upper(name)) %>%
+  select(-name)
+
+combined_neighborhood = 
+  left_join(fastfood_neighborhood, health_neighborhood, by = "neighborhood")
+
+lm(obesity ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+  broom::tidy()
+
+lm(diabetes ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+  broom::tidy()
+
+lm(stroke_hosp ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+  broom::tidy()
 ```
 
 ## Percentage of inspection grades in different boroughs
@@ -253,7 +280,6 @@ According to the three linear regression analysis above, we can conclude that th
 
 ```
 
-=======
 ## Healthy food restaurant in different neighborhood (Intuitively approached by cuisine type)
 
 ```{r healthy_restaurant}
@@ -299,7 +325,6 @@ percent_healthyfood = function(name_boro){
 
 map(name_boro, percent_healthyfood) %>%
   bind_rows()
->>>>>>> 1b73c81e90c21625f0dbdd19f382999e7cb062de
 ```
 
 ## Matching list of chain restaurants in U.S. and restaurant inspection data
