@@ -156,27 +156,28 @@ health_only_neighborhood <- health[-c(1:6),] %>%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
-  ggplot(aes(x = neighborhood,y = obesity)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none") +
   labs(title = "Neighborhood with 25 percent more obesity rate")
 
 
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
   filter(diabetes > 10) %>% 
-  ggplot(aes(x = neighborhood,y = diabetes)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +  
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+  ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +   
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none") +
   labs(title = "Neighborhood with 10 percent more diabetes rate")
 
 
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
   filter(stroke_hosp > 300) %>% 
-  ggplot(aes(x = neighborhood,y = stroke_hosp)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + geom_col() +  
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+  ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + 
+  geom_col() +    
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none") +
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
 
 
@@ -187,7 +188,6 @@ health_only_neighborhood %>%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, poverty)) %>% 
   filter(poverty > 20) %>% 
-  ggplot(aes(x = neighborhood,y = poverty)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggplot(aes(x = neighborhood,y = poverty, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   labs(title = "Neighborhood with 20 percent or more poverty")
@@ -196,8 +196,8 @@ health_only_neighborhood %>%
 health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, age0to44_rate)) %>% 
   filter(age0to44_rate > 60) %>% 
-  ggplot(aes(x = neighborhood,y = age0to44_rate)) + geom_col() +  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  ggplot(aes(x = neighborhood,y = age0to44_rate, fill = neighborhood)) + geom_col() +  
+  ggplot(aes(x = neighborhood,y = age0to44_rate, fill = neighborhood)) + 
+  geom_col() +    
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   labs(title = "Neighborhood with 60 percent or more people under age 44")
 
@@ -217,21 +217,9 @@ rest_inspection %>%
   arrange(cuisine_description) %>%
   count(cuisine_description)
 
-# calculating the taotal number of restaurants and the number of fastfood restaurants in the boro, as well as the percentage of fastfood restaurants.
+# calculating the total number of restaurants and the number of fastfood restaurants in the boro, as well as the percentage of fastfood restaurants.
 
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
-
-n_rest = function(name_boro){
-  
-  rest_boro =
-    rest_inspection %>%
-    filter(boro == name_boro) %>%
-    distinct(camis)
-  
-  n_rest = nrow(rest_boro)
-
-  n_rest    
-} 
 
 rest_fastfood = 
   rest_inspection %>%
@@ -252,26 +240,28 @@ rest_fastfood =
                                     "Sandwiches/Salads/Mixed Buffet",
                                     "Soups & Sandwiches"))
 
-n_fastfood = function(name_boro){
+percent_fastfood = function(name_boro){
+
+  rest_boro =
+    rest_inspection %>%
+    filter(boro == name_boro) %>%
+    distinct(camis)
   
+  n_rest = nrow(rest_boro)
+
   rest_fastfood_distinct = 
     rest_fastfood %>%
     filter(boro == name_boro) %>%
     distinct(camis, cuisine_description)
   
   n_fastfood = nrow(rest_fastfood_distinct)
-  
-  n_fastfood
-}
-
-percent_fastfood = function(name_boro){
-  
-  percent_fastfood = n_fastfood(name_boro)/n_rest(name_boro)
+    
+  percent_fastfood = n_fastfood/n_rest
   
   tibble(
     boro = name_boro,
-    n_fastfood = n_fastfood(name_boro),
-    n_rest = n_rest(name_boro),
+    n_fastfood = n_fastfood,
+    n_rest = n_rest,
     percent_fastfood = percent_fastfood
   )
 }
@@ -280,13 +270,15 @@ fastfood_boro =
   map(name_boro, percent_fastfood) %>%
   bind_rows()
 
-# summary for restaurant data for neighborhood
+# summary for restaurant data for boro
 
 fastfood_boro %>%
   mutate(boro = as.factor(boro),
-         boro = fct_relevel(boro, n_fastfood)) %>%
-  ggplot(aes(x = boro, y = n_fastfood)) +
-  geom_bar(stat = "count")
+         n_rest = as.numeric(n_rest),
+         boro = fct_reorder(boro, n_rest)) %>%
+  plot_ly(., x = ~boro, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
+  add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
+  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
 
 # calculating the taotal number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
 
@@ -295,18 +287,6 @@ neighborhood_list =
   distinct(neighborhood) %>%
   arrange(neighborhood)
   
-n_rest_neighborhood = function(name_neighborhood){
-  
-  rest_each_neighborhood =
-    rest_neighborhood %>%
-    filter(neighborhood == name_neighborhood) %>%
-    distinct(camis)
-  
-  n_rest_neighborhood = nrow(rest_each_neighborhood)
-
-  n_rest_neighborhood    
-} 
-
 rest_fastfood_neighborhood = 
   rest_neighborhood %>%
   filter(cuisine_description %in% c("Bagels/Pretzels",
@@ -326,26 +306,28 @@ rest_fastfood_neighborhood =
                                     "Sandwiches/Salads/Mixed Buffet",
                                     "Soups & Sandwiches"))
 
-n_fastfood_neighborhood = function(name_neighborhood){
+percent_fastfood_neighborhood = function(name_neighborhood){
+
+  rest_each_neighborhood =
+    rest_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis)
   
+  n_rest_neighborhood = nrow(rest_each_neighborhood)
+
   rest_fastfood_distinct_neighborhood = 
     rest_fastfood_neighborhood %>%
     filter(neighborhood == name_neighborhood) %>%
     distinct(camis, cuisine_description)
   
   n_fastfood_neighborhood = nrow(rest_fastfood_distinct_neighborhood)
-  
-  n_fastfood_neighborhood
-}
-
-percent_fastfood_neighborhood = function(name_neighborhood){
-  
-  percent_fastfood_neighborhood = n_fastfood_neighborhood(name_neighborhood)/n_rest_neighborhood(name_neighborhood)
+    
+  percent_fastfood_neighborhood = n_fastfood_neighborhood/n_rest_neighborhood
   
   tibble(
     neighborhood = name_neighborhood,
-    n_fastfood = n_fastfood_neighborhood(name_neighborhood),
-    n_rest = n_rest_neighborhood(name_neighborhood),
+    n_fastfood = n_fastfood_neighborhood,
+    n_rest = n_rest_neighborhood,
     percent_fastfood = percent_fastfood_neighborhood
   )
 }
@@ -357,8 +339,13 @@ fastfood_neighborhood =
 
 # summary for restaurant data for neighborhood
 
-
-
+fastfood_neighborhood %>%
+  mutate(neighborhood = as.factor(neighborhood),
+         n_rest = as.numeric(n_rest),
+         neighborhood = fct_reorder(neighborhood, n_rest)) %>%
+  plot_ly(., x = ~neighborhood, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
+  add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
+  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
 ```
 
 
@@ -484,6 +471,8 @@ health_boro =
 combined_boro = 
   left_join(fastfood_boro, health_boro, by = "boro")
 
+# fit single linear regression model between the three health outcomes and percentage of fastfood restaurants
+
 lm(obesity ~ percent_fastfood, combined_boro) %>%
   broom::tidy()
 
@@ -573,6 +562,10 @@ broom::tidy(reg3)
 ```
 p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
 According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
+<<<<<<< HEAD
+=======
+
+>>>>>>> c71af66aa03587100e98bb90ed5eef6cb6109d1a
 
 
 ## Neighborhood level
@@ -589,6 +582,8 @@ health_neighborhood =
 
 combined_neighborhood = 
   left_join(fastfood_neighborhood, health_neighborhood, by = "neighborhood")
+
+# fit multiple linear regression model between the three health outcomes and percentage of fastfood restaurants after adjusting fro race, age, poverty, smoking status and exercise status
 
 lm(obesity ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
   broom::tidy()
