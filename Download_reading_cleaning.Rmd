@@ -378,7 +378,12 @@ chain_rest = chains_html %>%
   select(dba)
 # read in the list of chain restaurants in us 
 # made the names to uppercase and changed the var name to dba
+head(chain_rest, 10)
+```
 
+**I have scraped list of 75 national chain restaurants from the wikipedia page (https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual) now I will join this dataset with restaurant inspection data to choose only the chain restaurants in NYC.**
+
+```{r joining chain and rest_inspection}
 # removing punctuations in chain_rest & restaurant inspections
 chain_rest_str = 
   chain_rest  %>%
@@ -393,13 +398,16 @@ nyc_chain =
   filter(!is.na(camis)) %>%
   distinct(camis, dba, boro)
 
-# How many mcdonalds?
 nyc_chain %>%
-  filter(str_detect(dba, regex("^MCDON")))
-#207
+  group_by(dba) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  head(10)
+```
 
-# Next is calculating the percentage of chain restaurants in each boro.
+**The combined dataframe, nyc_chain has `nrow(nyc_chain)` observations. Also, there were 33 different chain restaurants extracted. The chart is showing the 10 chain restaurants in descending order. Next step is calculating the percentage of chain restaurants in each boro.**
 
+```{r percent chain}
 # counting chains in boro
 
 count_chain = nyc_chain %>%
@@ -414,7 +422,14 @@ count_rest = rest_inspection %>%
 # calculating percentage of chains in each boro
 percent_chain = left_join(count_chain, count_rest) %>%
   mutate(chain_percentage = chain_n/res_n)
+
+# let's see this in a graph
+percent_chain %>%
+  mutate(boro = forcats::fct_reorder(boro, chain_percentage)) %>%
+   ggplot(aes(boro, chain_percentage, fill = boro)) + geom_bar(stat="identity")
 ```
+
+**We can see that Brooklyn has the lowest percentage of chain restauratns with percentage less that 5%. Next was Manhattan with 6% and the highest was Staten Island with 10% of chain restaurants.**
 
 ### Inspection Grade---Austin 
 
@@ -484,46 +499,51 @@ lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
 ```{r combining health data with percentage of chains}
 health_join = health %>% mutate(boro = str_to_upper(name))
 health_chain_join = left_join(percent_chain, health_join, by = "boro") 
+```
 
+```{r function health and chain restaurants}
 # function for modeling health outcome and percentage of chain restaurants
 
 lm_sum = function(health_outcome){
-  graphs_health = health_chain_join %>%
-  mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
-   ggplot(aes(boro, health_outcome, color = boro)) + geom_point()
-
+  
  graphs_chain_health = health_chain_join %>%
   mutate(boro = forcats::fct_reorder(boro, health_outcome)) %>%
-  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point()
+  ggplot(aes(chain_percentage, health_outcome, color = boro)) + geom_point() 
  
  reg_chain = lm(health_outcome ~ chain_percentage, data = health_chain_join) %>%
+   summary()
 
-list(graphs_health, graphs_chain_health, reg_chain)
+list(graphs_chain_health, reg_chain)
 # function that takes a input of column in health_chain_join and gives output of
-# 1. graphs_health will give a graph of health oucomes in different borougs to show you the how severity of health outcomes differ between boroughs
+ 
+# 1. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
 
-# 2. graphs_health will give a graph showing the relationship between health outcomes in boroughs and their percentage of chain restaurants
-
-# 3.reg_chain gives an output of the linear regression result
+# 2.reg_chain gives an output of the linear regression result
 }
+```
 
+```{r model obesity}
 # model obesity
 lm_sum(health_chain_join$obesity)
+```
 
-# The chain_percentage-health_outcome graph shows the relationship between obesity and borough's percetage of chain restaurants. It shows a slightly positive linear trend except for Brooklyn, which has the lowest percentage of health restaurants but third highest in percentage of obesity rate.
+**The chain_percentage-health_outcome graph shows the relationship between obesity and borough's percetage of chain restaurants. It shows a slightly positive linear trend except for Brooklyn, which has the lowest percentage of health restaurants but third highest in percentage of obesity rate.**
 
-# In the linear regression analysis,the p-value for the slope coeffcient, is 0.309, indicating that 0.05 significance level, there is no linear association between percentage of obesity in boroughs and their percentage of chain restaurants.
+**In the linear regression analysis,the p-value for the slope coeffcient, is 0.309, indicating that 0.05 significance level, there is no linear association between percentage of obesity in boroughs and their percentage of chain restaurants.**
 
+```{r model diabetes}
 # model diabetes
 lm_sum(health_chain_join$diabetes)
+```
 
-# Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants.
+**Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants.**
 
+```{r model stroke}
 # model stroke
 lm_sum(health_chain_join$stroke_hosp)
-
-# Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants. 
 ```
+
+**Percentage of diabetes and chain restaurants seems to have a lower association when visualizing the relationship. In the linear regression analysis,the p-value for the slope coeffcient, is 0.546, indicating that 0.05 significance level, there is no linear association between percentage of diabetes in boroughs and their percentage of chain restaurants. However, this was expected as the size of the data is only 6. Further research is needed.**
 
 
 ### Inspection Grade---Austin
@@ -553,7 +573,6 @@ broom::tidy(reg3)
 ```
 p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
 According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
-```
 
 
 ## Neighborhood level
@@ -584,8 +603,87 @@ lm(stroke_hosp ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + s
 
 ### Restaurant Chains---Sara
 
-```{r Restaurant_Chains_neighborhood}
+```{r joining_Chains_neighborhood}
+# removing punctuations in restaurant inspections
+rest_neigh_str = rest_neighborhood %>% 
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+# Matching the two datasets(neighborhood restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
+neighborhood_chain = 
+  right_join(rest_neigh_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, neighborhood)
 ```
+
+```{r chain percent calculation}
+# counting chains in neighborhoods
+
+neigh_count_chain = neighborhood_chain %>%
+  group_by(neighborhood) %>%
+  summarise(chain_n = n())
+
+neigh_count_rest = rest_neighborhood %>%
+  distinct(neighborhood, camis) %>%
+  group_by(neighborhood) %>%
+  summarise(res_n = n())
+
+# calculating percentage of chains in each boro
+percent_neighborhood_chain = left_join(neigh_count_chain, neigh_count_rest) %>%
+  mutate(chain_percentage = chain_n/res_n)
+
+# joinining with health data
+health_chain_neighborhood = left_join(percent_neighborhood_chain, health_only_neighborhood) 
+```
+
+
+```{r lm function}
+# function for modeling health outcome and percentage of chain restaurants
+
+lm_neighborhood = function(health_outcome){
+  
+ graphs_chain_health = health_chain_neighborhood %>%
+  mutate(boro = forcats::fct_reorder(neighborhood, health_outcome)) %>%
+  ggplot(aes(chain_percentage, health_outcome, color = neighborhood)) + geom_point() + theme(legend.position="none")
+ 
+ reg_chain = lm(health_outcome ~ chain_percentage + racewhite_rate + age0to44_rate + poverty + smoking + exercise, data = health_chain_neighborhood) %>%
+   summary()
+
+list(graphs_chain_health, reg_chain)
+# function that takes a input of column in health_chain_neighborhood and gives output of:
+ 
+# 1. graphs_health will give a graph showing the relationship between health outcomes in neighborhoods and their percentage of chain restaurants
+
+# 2.reg_chain gives an output of the linear regression result
+}
+```
+
+```{r chain obesity regression}
+lm_neighborhood(health_chain_neighborhood$obesity)
+
+# I tried log transformation and it's even better!
+
+#health_chain_neighborhood %>%
+#  mutate(boro = forcats::fct_reorder(neighborhood, obesity)) %>%
+#  ggplot(aes(chain_percentage, obesity^2, color = neighborhood)) + geom_point() + #theme(legend.position="none")
+#
+#lm(obesity^2 ~ chain_percentage + racewhite_rate + age0to44_rate + poverty + smoking + #exercise, data = health_chain_neighborhood) %>%
+#   summary()
+```
+
+**Fitting a regression line with predictors chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise, we can see that the percentage of chains is a significant predictor with p-value, 0.01057. Holding all the other predictors constant, 62.2% increase in percentage of obesity in NYC neighborhoods is associated with 1% increase in chain restaurants. From the graph of percentage of chain restaurants and percentage of obesity, we can see there is a positive trend.**
+
+```{r modeling neighborhood chains and diabetes}
+lm_neighborhood(health_chain_neighborhood$diabetes)
+```
+
+**We can also visually see there is positive correlation between diabetes and percentage of chains. From the linear regression analysis, the results show that percentage of chain restaurants in neighborhoods is a significant predictor of percentage of diabetics in NYC neighborhoods**
+
+
+```{r modeling neighborhood chains and diabetes}
+lm_neighborhood(health_chain_neighborhood$stroke_hosp)
+```
+
+**When fitting chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise on rate of stroke however, the outcomes indicates that chain_percentage is not a significant predictor at significance level 0.05.
 
 ### Inspection Grade---Austin
 
