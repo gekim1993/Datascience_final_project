@@ -270,16 +270,6 @@ fastfood_boro =
   map(name_boro, percent_fastfood) %>%
   bind_rows()
 
-# summary for restaurant data for boro
-
-fastfood_boro %>%
-  mutate(boro = as.factor(boro),
-         n_rest = as.numeric(n_rest),
-         boro = fct_reorder(boro, n_rest)) %>%
-  plot_ly(., x = ~boro, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
-  add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
-  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
-
 # calculating the taotal number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
 
 neighborhood_list = 
@@ -336,6 +326,16 @@ fastfood_neighborhood =
   map(neighborhood_list$neighborhood, percent_fastfood_neighborhood) %>%
   bind_rows() %>%
   mutate(neighborhood = str_to_upper(neighborhood))
+
+# summary for restaurant data for boro
+
+fastfood_boro %>%
+  mutate(boro = as.factor(boro),
+         n_rest = as.numeric(n_rest),
+         boro = fct_reorder(boro, n_rest)) %>%
+  plot_ly(., x = ~boro, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
+  add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
+  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
 
 # summary for restaurant data for neighborhood
 
@@ -699,48 +699,52 @@ write
 # additional analysis/sensitivity analysis---Ruiwei
 
 ```{r healthy_restaurant}
-rest_inspection %>%
-  mutate(dba = str_to_upper(dba)) %>%
-  arrange(cuisine_description) %>%
-  count(cuisine_description)
-
-rest_healthyfood = 
-  rest_inspection %>%
+rest_healthyfood_neighborhood = 
+  rest_neighborhood %>%
   filter(cuisine_description %in% c("Fruits/Vegetables",
                                     "Juice, Smoothies, Fruit Salads",
                                     "Salads",
                                     "Vegetarian",
                                     "Soups")) 
 
-rest_healthyfood %>%
-  distinct(camis, dba, boro, cuisine_description) %>%
-  group_by(boro) %>%
-  summarize(n = n())
+percent_healthyfood_neighborhood = function(name_neighborhood){
 
-n_healthyfood = function(name_boro){
+  rest_each_neighborhood =
+    rest_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
+    distinct(camis)
   
-  rest_healthyfood_distinct = 
-    rest_fastfood %>%
-    filter(boro == name_boro) %>%
+  n_rest_neighborhood = nrow(rest_each_neighborhood)
+
+  rest_healthyfood_distinct_neighborhood = 
+    rest_healthyfood_neighborhood %>%
+    filter(neighborhood == name_neighborhood) %>%
     distinct(camis, cuisine_description)
   
-  n_healthyfood = nrow(rest_healthyfood_distinct)
-  
-  n_healthyfood
-}
-
-percent_healthyfood = function(name_boro){
-  
-  percent_healthyfood = n_healthyfood(name_boro)/n_rest(name_boro)
+  n_healthyfood_neighborhood = nrow(rest_healthyfood_distinct_neighborhood)
+    
+  percent_healthyfood_neighborhood = n_healthyfood_neighborhood/n_rest_neighborhood
   
   tibble(
-    boro = name_boro,
-    percent_healthyfood = percent_healthyfood
+    neighborhood = name_neighborhood,
+    n_healthyfood = n_healthyfood_neighborhood,
+    n_rest = n_rest_neighborhood,
+    percent_healthyfood = percent_healthyfood_neighborhood
   )
 }
 
-map(name_boro, percent_healthyfood) %>%
-  bind_rows()
+healthyfood_neighborhood = 
+  map(neighborhood_list$neighborhood, percent_healthyfood_neighborhood) %>%
+  bind_rows() %>%
+  mutate(neighborhood = str_to_upper(neighborhood))
+
+healthyfood_neighborhood %>%
+  mutate(neighborhood = as.factor(neighborhood),
+         n_rest = as.numeric(n_rest),
+         neighborhood = fct_reorder(neighborhood, n_rest)) %>%
+  plot_ly(., x = ~neighborhood, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
+  add_trace(y = ~n_healthyfood, name = 'healthyfood restaurants') %>%
+  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
 ```
 
 
