@@ -23,6 +23,7 @@ library(jsonlite)
 library(viridis)
 library(plotly)
 library(ggplot2)
+library(knitr)
 ```
 
 
@@ -60,7 +61,7 @@ library(ggplot2)
 
 https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j 
 
-**2. 2015 Community Health Profiles Open Data:** 
+**2. 2015 Community Health Profiles Open Data: ** 
 
 https://www1.nyc.gov/site/doh/data/data-publications/profiles.page
   
@@ -71,9 +72,9 @@ https://www1.nyc.gov/site/doh/data/data-publications/profiles.page
 
 ## Data Import and Cleaning---Tim
 
-**Downloading restaurant inspection data from NYC open data:**
+**Downloading restaurant inspection data from NYC open data: **
 
-```{r reading the New York Inspection data}
+```{r reading_the_New_York_Inspection_data, message=FALSE, warning=FALSE}
 get_all_inspections = function(url) {
   
   all_inspections = vector("list", length = 0)
@@ -127,7 +128,7 @@ health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>%
 
 **Matching the neighborhood names with restaurant zipcodes:**
 
-```{r merging the neighborhood data with restaurant data}
+```{r merging the neighborhood data with restaurant data, message=FALSE}
 zip_neighbor <- read_csv("neigh_zipcode.csv") %>% 
   mutate(zipcode = as.character(zipcode))
 ##restaurant data with neighbourhood
@@ -146,23 +147,20 @@ explore_boro = health[c(2:6),] %>%
   mutate(name = as.factor(name)) %>% 
   data.frame()
 
-
+  # for obesity.
   explore_boro %>%
   mutate(name = fct_reorder(name,obesity)) %>% 
   plot_ly(x = ~name, y = ~obesity, color = ~name, type = "bar")
-  # for obesity.
 
-
+  # for diabetes.
   explore_boro %>% 
   mutate(name = fct_reorder(name,diabetes)) %>%
   plot_ly(x = ~name, y = ~diabetes, color = ~name, type = "bar")
-  # for diabetes.
 
-
+  # for stroke.
   explore_boro %>% 
   mutate(name = fct_reorder(name,stroke_hosp)) %>%
   plot_ly(x = ~name, y = ~stroke_hosp, color = ~name, type = "bar")
-  # for stroke.
 
 ```
 
@@ -233,15 +231,17 @@ health_only_neighborhood %>%
 
 ### Fastfood restaurants by cuisine type---Ruiwei
 
-```{r cuisine_type_summary}
+```{r identifying_fastfood_cuisine_type, eval=FALSE}
 # Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
 
 rest_inspection %>%
   mutate(dba = str_to_upper(dba)) %>%
   arrange(cuisine_description) %>%
   count(cuisine_description)
+```
 
-# calculating the total number of restaurants and the number of fastfood restaurants in the boro, as well as the percentage of fastfood restaurants.
+```{r calculating_percentage}
+# calculating the total number of restaurants and the number of fastfood restaurants in each boro, as well as the percentage of fastfood restaurants.
 
 name_boro = c("MANHATTAN", "BROOKLYN", "QUEENS", "BRONX", "STATEN ISLAND")
 
@@ -294,7 +294,7 @@ fastfood_boro =
   map(name_boro, percent_fastfood) %>%
   bind_rows()
 
-# calculating the taotal number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
+# calculating the total number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
 
 neighborhood_list = 
   rest_neighborhood %>%
@@ -350,27 +350,38 @@ fastfood_neighborhood =
   map(neighborhood_list$neighborhood, percent_fastfood_neighborhood) %>%
   bind_rows() %>%
   mutate(neighborhood = str_to_upper(neighborhood))
+```
 
-# summary for restaurant data for boro
-
+```{r summary_boro_rest}
 fastfood_boro %>%
   mutate(boro = as.factor(boro),
          n_rest = as.numeric(n_rest),
-         boro = fct_reorder(boro, n_rest)) %>%
+         boro = fct_reorder(boro, percent_fastfood)) %>%
   plot_ly(., x = ~boro, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
   add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
-  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
+  layout(yaxis = list(title = 'number of restaurants'),
+         xaxis = list(title = 'borough (ordered by percentage of fastfood restaurants)'),
+         barmode = 'stack')
+```
 
-# summary for restaurant data for neighborhood
+**From the plot, as we anticipated, among five boroughs, Manhanttan has the largest number of restaurants but smallest percentage of fastfood restaurants. followed by Brooklyn. While Staten Island has the smallest number of total restaurants and Bronx has the largest percentage of fastfood restaurants.**
 
+```{r summary_neighborhood_rest}
 fastfood_neighborhood %>%
   mutate(neighborhood = as.factor(neighborhood),
          n_rest = as.numeric(n_rest),
-         neighborhood = fct_reorder(neighborhood, n_rest)) %>%
+         neighborhood = fct_reorder(neighborhood, percent_fastfood)) %>%
   plot_ly(., x = ~neighborhood, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
   add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
-  layout(yaxis = list(title = 'number of restaurants'), barmode = 'stack')
+  layout(yaxis = list(title = 'number of restaurants'), 
+         xaxis = list(title = 'neighborhood (ordered by percentage of fastfood restaurants)',
+                      tickangle = 45),
+         barmode = 'stack')
 ```
+
+**From the plot, we can see that, while the Greenwich Village and SOHO neighborhood has fairly large number of restaurants, it has the smallest percentage of fastfood restaurants. Williamsbridge and Baychester has the largest percentage of fastfood restaurants.**
+
+**When large number of total restaurants is not equal to large percentage of fastfood restaurants in that neighborhood, we can conclude that the distribution of fastfood restaurants is not even across neighborhoods, which also implies the motivation of our study, we want to investigate if this uneven distribution of fastfood restaurants is associated with diffferent level of chronic disease outcomes within a neighborhood.**
 
 ### Restaurant Chains---Sara
 
@@ -460,10 +471,8 @@ data %>%
          boro = fct_reorder(boro,grade_percent)) %>% 
   plot_ly(x = ~boro, y = ~grade_percent, color = ~boro, type = "bar")
 ```
-<<<<<<< HEAD
-=======
+
 **From the hisotgram, we can see that there is little difference between five boroughs about the percentage of "grade-A" restaurants in each borough.**
->>>>>>> 78ed4b520aaf4d06ad73515e0f2900c8582f90af
 
 ```{r r grade_percentage for boro}
 data1 =
@@ -481,6 +490,7 @@ data1 %>%
          neighborhood = fct_reorder(neighborhood,grade_percent)) %>% 
   plot_ly(x = ~neighborhood, y = ~grade_percent, color = ~neighborhood, type = "bar")
 ```
+
 **Different from the situation in borough, the difference of percentage of "grade-A" restaurants in each borough exists. "Throgs Neck and Co-op City" has the greatest grade-A restaurants percentage, around 44.50%. "Sunset Park", however, has the least, around 30.62%. "Washington Heights", where we live, takes the fourth from the end, 34.39%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights".**
 
 
@@ -505,14 +515,19 @@ combined_boro =
 # fit single linear regression model between the three health outcomes and percentage of fastfood restaurants
 
 lm(obesity ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
-
+  broom::tidy() %>%
+  kable()
+  
 lm(diabetes ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
+  broom::tidy() %>%
+  kable()
 
 lm(stroke_hosp ~ percent_fastfood, combined_boro) %>%
-  broom::tidy()
+  broom::tidy() %>%
+  kable()
 ```
+
+**According to the results of single linear regressions, we can conclude that there is no significant relationships between the three chronic disease outcomes and the percentage of fastfood restuarants within boroughs. (Obesity: p-value=0.09400275; Diabetes: p-value=0.1669923; Hospitalized Stroke: p-value=0.26367653)**
 
 ### Restaurant Chains---Sara
 
@@ -613,14 +628,19 @@ combined_neighborhood =
 # fit multiple linear regression model between the three health outcomes and percentage of fastfood restaurants after adjusting fro race, age, poverty, smoking status and exercise status
 
 lm(obesity ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
-  broom::tidy()
+  broom::tidy() %>%
+  kable()
 
 lm(diabetes ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
-  broom::tidy()
+  broom::tidy() %>%
+  kable()
 
 lm(stroke_hosp ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
-  broom::tidy()
+  broom::tidy() %>%
+  kable()
 ```
+
+**According to the results of multiple linear regressions, we can conclude that after adjusting for race, age, poverty, smoking status and exercise status, there is significant relationships between the three chronic disease outcomes and the percentage of fastfood restuarants within boroughs. (Obesity: p-value=0.000909491; Diabetes: p-value=3.756556e-03; Hospitalized Stroke: p-value=0.0039134849)**
 
 ### Restaurant Chains---Sara
 
@@ -751,7 +771,7 @@ write
 
 
 
-# additional analysis/sensitivity analysis---Ruiwei
+# Additional analysis/sensitivity analysis---Ruiwei
 
 ```{r healthy_restaurant}
 rest_healthyfood_neighborhood = 
