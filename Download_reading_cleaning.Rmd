@@ -674,7 +674,7 @@ lm_neighborhood(health_chain_neighborhood$diabetes)
 **We can also visually see there is positive correlation between diabetes and percentage of chains. From the linear regression analysis, the results show that percentage of chain restaurants in neighborhoods is a significant predictor of percentage of diabetics in NYC neighborhoods**
 
 
-```{r modeling neighborhood chains and diabetes}
+```{r modeling neighborhood chains and stroke}
 lm_neighborhood(health_chain_neighborhood$stroke_hosp)
 ```
 
