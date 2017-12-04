@@ -449,7 +449,9 @@ data =
   group_by(boro, grade) %>%
   summarise(n = n()) %>%
   mutate(grade_percent = n / sum(n)) %>% 
-  filter(grade == "A")
+  filter(grade == "A", boro!="Missing") %>% 
+  ungroup(boro)
+
 ```
 
 ```{r plot for boro}
@@ -458,6 +460,10 @@ data %>%
          boro = fct_reorder(boro,grade_percent)) %>% 
   plot_ly(x = ~boro, y = ~grade_percent, color = ~boro, type = "bar")
 ```
+<<<<<<< HEAD
+=======
+**From the hisotgram, we can see that there is little difference between five boroughs about the percentage of "grade-A" restaurants in each borough.**
+>>>>>>> 78ed4b520aaf4d06ad73515e0f2900c8582f90af
 
 ```{r r grade_percentage for boro}
 data1 =
@@ -466,7 +472,7 @@ data1 =
   summarise(n = n()) %>%
   mutate(grade_percent = n / sum(n)) %>% 
   filter(grade == "A") %>% 
-  top_n(15)
+  ungroup(boro)
 ```
 
 ```{r plot for neighborhood}
@@ -475,6 +481,7 @@ data1 %>%
          neighborhood = fct_reorder(neighborhood,grade_percent)) %>% 
   plot_ly(x = ~neighborhood, y = ~grade_percent, color = ~neighborhood, type = "bar")
 ```
+**Different from the situation in borough, the difference of percentage of "grade-A" restaurants in each borough exists. "Throgs Neck and Co-op City" has the greatest grade-A restaurants percentage, around 44.50%. "Sunset Park", however, has the least, around 30.62%. "Washington Heights", where we live, takes the fourth from the end, 34.39%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights".**
 
 
 
@@ -565,30 +572,27 @@ combined =
   left_join(data, health_boro, by = "boro") %>% 
   filter(boro!="Missing")
 ```
-First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.
+**First, combine the data which we substract from the data of each borough of our "health" data with the dataset which shows the percentage of "grade-A" restaurants in each borough. Then we acquire the final dataset we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that borough.**
 ```{r do the linear regression between obesity and grade_percent for boro}
 reg1 <- lm(obesity ~ grade_percent, data = combined )
 summary(reg1)
 broom::tidy(reg1)
 ```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.
+**p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the obesity and the percentage of grade A restaurant in each borough.**
 ```{r do the linear regression between diabetes and grade_percent for boro}
 reg2 <- lm(diabetes ~ grade_percent, data = combined )
 summary(reg2)
 broom::tidy(reg2)
 ```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.
+**p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the diabetes and the percentage of grade A restaurant in each borough.**
 ```{r do the linear regression between stroke and grade_percent for boro}
 reg3 <- lm(stroke_hosp ~ grade_percent, data = combined )
 summary(reg3)
 broom::tidy(reg3)
 ```
-p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.  
-According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.
-<<<<<<< HEAD
-=======
+**p-value is way much higher than 0.05, fail to reject the null, meaning that there is no linear association between the stroke and the percentage of grade A restaurant in each borough.**  
+**According to the three linear regression analysis above, we can conclude that there is no linear relationship between obesity, diabetes and stroke with the "grade-A" restaurants in each borough.**
 
->>>>>>> c71af66aa03587100e98bb90ed5eef6cb6109d1a
 
 
 ## Neighborhood level
@@ -703,10 +707,35 @@ lm_neighborhood(health_chain_neighborhood$stroke_hosp)
 ### Inspection Grade---Austin
 
 ```{r Inspection_Grade_neighborhood}
+data2 =
+  data1 %>% 
+  mutate(neighborhood = str_to_upper(neighborhood))
+
 combined1 = 
-  left_join(data1, health_neighborhood, by = "neighborhood") %>% 
-  filter(neighborhood!="Missing")
+  left_join(data2, health_neighborhood, by = "neighborhood")
+  
 ```
+**First, combine the data which shows the health data of each neighborhood with the dataset which shows the percentage of "grade-A" restaurants in each neighborhood. Then we acquire the final dataset, we can do the linear regression between obesity, diabetes and stroke with the percentage of "grade-A" restaurants, which we treat as a represent of the healthy restaurants in that neighborhood.**
+```{r do the linear regression between obesity and grade_percent for neighborhood}
+reg4 <- lm(obesity ~ grade_percent + racewhite_rate + poverty + unemployment + smoking + exercise + diabetes + stroke_hosp + age0to44_rate, data = combined1 )
+summary(reg4)
+broom::tidy(reg4)
+```
+**p-value is smaller than 0.05, reject the null, meaning that there is a linear association between the obesity and the percentage of grade A restaurant in each neighborhood.**
+
+```{r do the linear regression between diabetes and grade_percent for neighborhood}
+reg5 <- lm(diabetes ~ grade_percent + racewhite_rate + poverty + unemployment + smoking + exercise + obesity + stroke_hosp + age0to44_rate, data = combined1 )
+summary(reg5)
+broom::tidy(reg5)
+```
+**p-value smaller than 0.05, reject the null, meaning that there is a linear association between the diabetes and the percentage of grade A restaurant in each neighborhood.**
+```{r do the linear regression between stroke and grade_percent for neighborhood}
+reg6 <- lm(stroke_hosp ~ grade_percent + racewhite_rate + poverty + unemployment + smoking + exercise + diabetes + obesity + age0to44_rate, data = combined1 )
+summary(reg6)
+broom::tidy(reg6)
+```
+**Surprise! We get an insignificant variable! P-value is higher than 0.05, suggesting there is no linear association between stroke and the percentage of grade A restaurant in each neighborhood.**
+
 
 
 
