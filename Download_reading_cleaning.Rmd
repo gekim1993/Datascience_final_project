@@ -472,10 +472,18 @@ lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + s
 
 # Discussion---to do later 
 
-write
+**When fitting chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise on rate of stroke however, the outcomes indicates that chain_percentage is not a significant predictor at significance level 0.05.**  
+
+**We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gave the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 0.1 percent increase in fastfood restaurants in a neighborhood is associated with 5% increase in the neighborhood's obesity prevalence, while adjusting for other factors.**  
+
+**The p-value of the regression coefficients for model with outcomes as diabetes/stroke were both arround 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 1 percent increase in fastfood restaurants in a neighborhood is associated with 17.5% increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 1 percent increase in fastfood restaurants in a neighborhood is associated with increase in 573.5 stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.**  
+
+
+**It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to having a lower p-value than the other two health conditions**  
+
 
 # Conclusion---to do later 
 
-**Overall, we conclude that there is a significant relationship between obesity/diabetes/stroke and the geographical distribution of restaurants.**
+**Overall, we conclude that there is a significant relationship between obesity/diabetes/stroke and the geographical distribution of fast-food restaurants.**
 
 
