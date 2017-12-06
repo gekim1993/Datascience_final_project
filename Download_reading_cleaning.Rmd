@@ -362,6 +362,45 @@ percent_chain %>%
 
 **We can see that Brooklyn has the lowest percentage of chain restauratns with percentage less that 5%. Next was Manhattan with 6% and the highest was Staten Island with 10% of chain restaurants.**
 
+```{r joining_Chains_neighborhood}
+# removing punctuations in restaurant inspections
+rest_neigh_str = rest_neighborhood %>% 
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+# Matching the two datasets(neighborhood restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
+neighborhood_chain = 
+  right_join(rest_neigh_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, neighborhood, boro)
+```
+
+```{r chain percent calculation}
+# counting chains in neighborhoods
+
+neigh_count_chain = neighborhood_chain %>%
+  group_by(neighborhood, boro) %>%
+  summarise(chain_n = n())
+
+neigh_count_rest = rest_neighborhood %>%
+  distinct(neighborhood, camis) %>%
+  group_by(neighborhood) %>%
+  summarise(res_n = n())
+
+# calculating percentage of chains in each boro
+percent_neighborhood_chain = left_join(neigh_count_chain, neigh_count_rest) %>%
+  ungroup() %>%
+  mutate(chain_percentage = chain_n/res_n,
+         neighborhood = str_to_upper(neighborhood))
+
+plot_chain_neighbor = percent_neighborhood_chain %>%
+  mutate(neighborhood = forcats::fct_reorder(neighborhood, chain_percentage)) %>%
+  ggplot(aes(neighborhood, chain_percentage, fill = boro)) + geom_bar(stat="identity") 
+
+ggplotly(plot_chain_neighbor)
+```
+
+I have plotted neighborhoods of NYC against their percentage of chain restaurants and grouped them by borough. We see that all the neighborhodds that had a percentage of chain restuarants less than 5% were all part of Brooklyn except Greenwhich village and Soho of Manhattan. Neighborhoods in Queens and Manhattan are spread out across low to high percentage of chain restaurants while most of neighborhoods in Bronx and Staten Island have high percentages. The neighbor hood that had the highest percentage of chain restaurants were Throgs neck and Co-op City of Bronx with 16.5% of chain restaurats out of all restaurats.
+
 ### Inspection Grade---Austin 
 
 ```{r r grade_percentage for neighborhood}
