@@ -1,6 +1,6 @@
 ---
 title: "The relationship between restaurant geographical distribution and chronic disease outcomes in New York City"
-author: "Gaeun Kim(gk2501); Junting Ren(jr3755);  Leyiyu Yue(ly2428); Ruiwei Zhang(rz2375) ; "
+author: "Gaeun Kim(gk2501); Junting Ren(jr3755);  Leyiyu Yue(ly2428); Ruiwei Zhang(rz2375)"
 date: "November 20, 2017"
 output: 
    html_document:
@@ -30,9 +30,9 @@ library(knitr)
 
 # Motivation
 
-This year, a report from Centers for Disease Control and Prevention revealed that America’s obesity rate has reached a record high. Contrasting to popular belief, New Yorkers are not so safe from the obesity epidemic, as more than half of adult New Yorkers are either overweight or obese. Studies show that the rise in the obesity epidemic is partly due to disparities in food environment; it is harder for some to eat healthier because their options are limited.  
+This year, a report from Centers for Disease Control and Prevention revealed that America’s obesity rate has reached a record high. In contrast to the popular belief, New Yorkers are not so safe from the obesity epidemic, as more than half of adult New Yorkers are either overweight or obese. Studies show that the rise in the obesity epidemic is partly due to disparities in food environment; it is harder for some to eat healthier because their options are limited.  
 
-For example, I and my fellow classamate often go out to McDonald that are near our home for convenience, even though these restaurants were not healthy. Environment can affect our health behaviours imperceptibly.  
+For example, My fellow classamate and me (here is Tim), we often go to McDonald that are near our home for convenience, even though these restaurants are not healthy. Environment can affect our health behaviours imperceptibly.  
 
 This project intends to look deeper into the relationship between food environment in NYC and obesity rate along with diabetes rate and stroke hospitalization rate.
 
@@ -40,7 +40,7 @@ This project intends to look deeper into the relationship between food environme
 
 # Inspiration from other related Work
 
-In 2008, aggregating Google search queries, Google attempted to make accurate predictions about flu activity. Then what kind of infomation on the internet that can predict the prevelence of chronic disease such as obesity, diabetes or cancer?  
+In 2008, aggregating Google search queries, Google attempted to make accurate predictions about flu activity. Then we are wondering what kind of infomation on the internet we can use to predict the prevelence of chronic disease such as obesity, diabetes or cancer?  
 
  
  
@@ -48,13 +48,13 @@ In 2008, aggregating Google search queries, Google attempted to make accurate pr
 
 1. Can the percentage of nation-wide chain and fast-food restaurants in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate? 
 
-2. Can the percentage of fast-food restaurant (defined by cuisine description in the restaurant inspection dataset) in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate ? 
+2. Can the percentage of fast-food restaurant (defined by cuisine description in the restaurant inspection dataset) in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate? 
 
 3. Can the percentage of health inspection grade A restaurant in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate?  
  
 4. Can the composite restaurant health score of different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate?
 
-For the first three questions, we stick to it. Since the percentage of health inspection grade A restaurant is not a significant predictor, we later put it into the model as a confounder. Moreover, we deleted the fourth problem. Composite restaurant health score were to subjective and difficult to assess. Moreover, we calculated the boro level model first due to the difficulties we encountered in scaping zipcode-neighborhood data. However, after some struggle, we still managed to get the neighborhood information and analyze the data accordingly.
+For the first two questions, we stick to it. For the third one, After looking into the backgroud of the restaurant inspection data, we found out that the percentage of health inspection grade A restaurant is intuitively not related to the three chronic disease health outcomes, so we later consider it as a confounder. We also deleted the fourth problem, since composite restaurant health score is too subjective and difficult to assess. Moreover, we fitted models on the borough level first due to the difficulties we encountered in scaping zipcode-neighborhood data. However, after some struggle, we manage to get the neighborhood information and analyze the data accordingly.
 
 
 
@@ -66,7 +66,7 @@ For the first three questions, we stick to it. Since the percentage of health in
 
 https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j  
 
-This dataset contains the data for restaurant inspection in NYC from August 1, 2014 to December 5th, 2017. Every row is a restaurant inspection record that includes the name of the restaurant, zipcode, cuisine type description, inspection grade (A as the best grade) and so on. Since this dataset has the inspection data for 3 years, it is almost certained that it has the data for all the restuarants in NYC in 2014.  
+This dataset contains the data for restaurant inspection in NYC from August 1, 2014 to December 5th, 2017. Every row is a restaurant inspection record that includes the name of the restaurant, zipcode, cuisine type description, inspection grade (A as the best grade) and so on. Since this dataset has the inspection data for 3 years, it is almost certain that it has the data for all the restuarants in NYC in 2014.  
 
 **Variable used in this datasets**  
     
@@ -80,7 +80,7 @@ GRADE: Inspection grade for the specific inspection.
 
 https://www1.nyc.gov/site/doh/data/data-publications/profiles.page  
 
-This dataset contains NYC every neighborhoods' demographic (percentage of white race, poverty percentage), health (age-adjusted percent of adult exercised in the last 30 days, age-adjusted percent of adults as a smoker) and our main outcome (Age-adjusted percent of adults that is obese (BMI of 30 or gthe reater), ge-adjusted percent of adults, Age-adjusted rate of hospitalizations due to stroke (cerebrovascular disease) per 100,000 adults)
+This dataset contains NYC every neighborhoods' demographic (percentage of white race, poverty percentage), health (age-adjusted percent of adult exercised in the last 30 days, age-adjusted percent of adults as a smoker) and our main outcome (Age-adjusted percent of adults that is obese (BMI of 30 or gthe reater), Age-adjusted percent of adults, Age-adjusted rate of hospitalizations due to stroke (cerebrovascular disease) per 100,000 adults)
 
 **Variable used in this datasets**  
 
@@ -95,11 +95,11 @@ Stroke_Hosp: Age-adjusted rate of hospitalizations due to stroke (cerebrovascula
   
 **3. Web scraping for what zipcodes each neighborhood contains **  
 
-Because Community Health Profiles Open Data is has only neighborhood level information, so we have to aggregate neighborhood level information from the restaurant inspeciton data. However, the restaurant inspection data was using zipcodes for every restaurant. Therefore, we had to add the neighborhood name to every restaurant, so that we can group by neighborhood then calculate the percentage for every neighborhood.   
+Because Community Health Profiles Open Data has only neighborhood level information, so we have to aggregate neighborhood level information from the restaurant inspeciton data. However, the restaurant inspection data is using zipcodes for every restaurant. Therefore, we have to add the neighborhood name to every restaurant, so that we can group by neighborhood then calculate the percentage for every neighborhood.   
 
-First, we scraped the table data from https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm. However the neighborhood name and combinations were different from the health profile data we downloaded. We cannot merge the two datasets. Then we tried to look for the raw classification for the neigborhoods in health data from New York University's Furman Center for Real Estate and Urban Policy and the NYC Department of City Planning. However, still no luck becuase the neighborhood was not divided by zipcode areas. Then we tried the hardest way: search the name of the neighborhood on Google and finding the matching zipcodes. It worked out well, but it was not precise, because neighborhoods were not divided according to the area of the zipcode. Different neighborhoods have the same zipcodes.   
+First, we scraped the table data from https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm. However the neighborhood name and combinations are different from the health profile data we downloaded. We could not merge the two datasets. Then we tried to look for the raw classification for the neigborhoods in health data from New York University's Furman Center for Real Estate and Urban Policy and the NYC Department of City Planning. However, still no luck becuase the neighborhood is not divided by zipcode areas. Finally we tried the hardest way: searching the name of the neighborhood on Google and finding the matching zipcodes. Although it is not precise because neighborhoods are not divided according to the area of the zipcode (different neighborhoods sometimes share the same zipcodes), it works out well.    
 
-**In order to be unbiased in this process, if two neighborhoods contains the same zipcode area, we will randomly assign this zipcode to only one neighborhood.**  
+**To deal with this issue and get an unbiased result, we randomly assign the zipcode to only one neighborhood if two or more neighborhoods are in the same zipcode area.**  
 
 ## Data Import and Cleaning
 
@@ -169,21 +169,21 @@ rest_neighborhood = left_join(rest_inspection, zip_neighbor, by = "zipcode") %>%
 
 ## Health Data
 
+The health data we achieved is very well-structured. We make plots to see the distribution of the three chronic disease outcomes across neighorhoods.
+
 ```{r neighborhood_summary}
 health_only_neighborhood <- health[-c(1:6),] %>% 
   rename(neighborhood = name) %>% 
   mutate(neighborhood = as.factor(neighborhood))
+
 ##Plotting for outcome in different neighborhood
-
-
 bar_obe <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
   ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.position = "none") +
-  labs(title = "Neighborhood with 25 percent more obesity rate")
-
+  labs(title = "Neighborhood with 25 percent or more obesity rate")
 
 bar_dia <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
@@ -191,8 +191,7 @@ bar_dia <- health_only_neighborhood %>%
   ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +   
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.position = "none") +
-  labs(title = "Neighborhood with 10 percent more diabetes rate")
-
+  labs(title = "Neighborhood with 10 percent or more diabetes rate")
 
 bar_stro <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
@@ -201,29 +200,26 @@ bar_stro <- health_only_neighborhood %>%
   geom_col() +    
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.position = "none") +
-  labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
+  labs(title = "Neighborhood with 300 or more stroke hospitalization in 100,000 adults")
 
 ggplotly(bar_obe)
 ggplotly(bar_dia)
 ggplotly(bar_stro)
-
 ```
   
-  
-Williamsbridge and Baychester have the highest obesity rate, up to 32%. East New York and Starrett City have the highest diabetes rate, up to 17 percent. BUshwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults. Morrisania and Crotona has the highest percent of poverty rate, up to 40%. Fiancial district has the highest percent of young peoeple, up to 67%.
+Williamsbridge and Baychester have the highest obesity rate, up to 32%. East New York and Starrett City have the highest diabetes rate, up to 17 percent. Bushwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults. Morrisania and Crotona has the highest percent of poverty rate, up to 40%, while Fiancial district has the highest percent of young peoeple, up to 67% (graphs for covariates not shown).
 
 
 ## Restaurant data
 
 ### Fastfood restaurants by cuisine type
 
-Fastfood restaurants are identified by their cuisine descriptions given in the inspection data. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
+Fastfood restaurants are identified by their cuisine descriptions given in the inspection data. We print out the cuisine descriptions list (n=85) and let everyone circle the ones they think is fastfood and the union are used as our rule (use union because it's more conservative).
 
-We classify cuisine descriptions "Bagels/Pretzels", "Bottled beverages, including water, sodas, juices, etc.", "Chicken", "Delicatessen", "Donuts", "Hamburgers", "Hotdogs", "Hotdogs/Pretzels", "Ice Cream, Gelato, Yogurt, Ices", "Nuts/Confectionary", "Pancakes/Waffles", "Pizza", "Soul Food", "Sandwiches", "Sandwiches/Salads/Mixed Buffet" and "Soups & Sandwiches" as fastfood restaurants. And then we calculate the total number of restaurants...
+We classify cuisine descriptions "Bagels/Pretzels", "Bottled beverages, including water, sodas, juices, etc.", "Chicken", "Delicatessen", "Donuts", "Hamburgers", "Hotdogs", "Hotdogs/Pretzels", "Ice Cream, Gelato, Yogurt, Ices", "Nuts/Confectionary", "Pancakes/Waffles", "Pizza", "Soul Food", "Sandwiches", "Sandwiches/Salads/Mixed Buffet" and "Soups & Sandwiches" as fastfood restaurants. And then we calculate the total number of restaurants and the number of fastfood restaurants, as well as the percentage of fastfood restaurants for each neighborhood.
 
 ```{r calculating_percentage}
 # calculating the total number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
-
 neighborhood_list = 
   rest_neighborhood %>%
   distinct(neighborhood) %>%
@@ -278,9 +274,8 @@ fastfood_neighborhood =
   map(neighborhood_list$neighborhood, percent_fastfood_neighborhood) %>%
   bind_rows() %>%
   mutate(neighborhood = str_to_upper(neighborhood))
-```
 
-```{r summary_neighborhood_rest}
+# plot for each neighborhood
 fastfood_neighborhood %>%
   mutate(neighborhood = as.factor(neighborhood),
          n_rest = as.numeric(n_rest),
@@ -288,12 +283,11 @@ fastfood_neighborhood %>%
          neighborhood = fct_reorder(neighborhood, percent_fastfood)) %>%
   plot_ly(., x = ~neighborhood, y = ~n_fastfood, type = 'bar', name = 'fastfood restaurants') %>%
   add_trace(y = ~n_nonfastfood, name = 'non-fastfood restaurants') %>%
-  layout(yaxis = list(title = 'number of restaurants'), 
-         xaxis = list(title = 'neighborhood (ordered by percentage of fastfood restaurants)',
-                      tickangle = 45),
+  layout(yaxis = list(title = 'Number of restaurants'), 
+         xaxis = list(title = 'Neighborhood (ordered by percentage of fastfood restaurants)',
+                      showticklabels = FALSE),
          barmode = 'stack')
 ```
-  
   
 From the plot, we can see that, while the Greenwich Village and SOHO neighborhood has fairly large number of restaurants, it has the smallest percentage of fastfood restaurants. Williamsbridge and Baychester has the largest percentage of fastfood restaurants.
 
@@ -301,11 +295,13 @@ When large number of total restaurants is not equal to large percentage of fastf
 
 ### Restaurant Chains
 
-We scrape list of 75 national chain restaurants from the wikipedia page (https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual) now I will join this dataset with restaurant inspection data to choose only the chain restaurants in NYC.
+We first scrape the list of 75 national chain restaurants in the US from the wikipedia page (https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual) and then join this dataset with restaurant inspection data to choose only the chain restaurants in NYC.
 
 ```{r reading_rest_chains_wiki, matching_with_inspection, percentage_chains_boro}
 chains_html = read_html("https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual")
 
+# read in the list of chain restaurants in us 
+# made the names to uppercase and changed the var name to dba
 chain_rest = chains_html %>%
   html_nodes("ul:nth-child(9) li , .jquery-tablesorter tr:nth-child(1) td:nth-child(1)") %>%
   html_text() %>%
@@ -313,12 +309,11 @@ chain_rest = chains_html %>%
   mutate(dba = value, 
          dba = str_to_upper(dba)) %>%
   select(dba)
-# read in the list of chain restaurants in us 
-# made the names to uppercase and changed the var name to dba
+
 head(chain_rest, 10)
 ```
 
-Then, we match list of chain restaurants in U.S. and restaurant inspection data.
+Then, we match the list of chain restaurants in U.S. with the restaurant inspection data.
 
 ```{r joining chain and rest_neighborhood}
 # removing punctuations in chain_rest & restaurant inspections (neighborhoods)
@@ -330,7 +325,6 @@ rest_neigh_str = rest_neighborhood %>%
   mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
 
 # Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-
 neighborhood_chain = 
   right_join(rest_neigh_str, chain_rest_str) %>%
   filter(!is.na(camis)) %>%
@@ -343,11 +337,10 @@ neighborhood_chain %>%
   head(10)
 ```
 
-The combined dataframe, neighborhood_chain has `r nrow(neighborhood_chain)` observations. Also, there were 33 different chain restaurants extracted. The chart is showing the 10 chain restaurants in descending order.
+The combined dataset "neighborhood_chain" has `r nrow(neighborhood_chain)` observations. Also, there were 33 different chain restaurants extracted. 
 
 ```{r chain percent calculation}
 # counting chains in neighborhoods
-
 neigh_count_chain = neighborhood_chain %>%
   group_by(neighborhood, boro) %>%
   summarise(chain_n = n())
@@ -357,7 +350,7 @@ neigh_count_rest = rest_neighborhood %>%
   group_by(neighborhood) %>%
   summarise(res_n = n())
 
-# calculating percentage of chains in each boro
+# calculating percentage of chains in each neighborhood
 percent_neighborhood_chain = left_join(neigh_count_chain, neigh_count_rest) %>%
   ungroup() %>%
   mutate(chain_percentage = chain_n/res_n,
@@ -365,16 +358,18 @@ percent_neighborhood_chain = left_join(neigh_count_chain, neigh_count_rest) %>%
 
 plot_chain_neighbor = percent_neighborhood_chain %>%
   mutate(neighborhood = forcats::fct_reorder(neighborhood, chain_percentage)) %>%
-  ggplot(aes(neighborhood, chain_percentage, fill = boro)) + geom_bar(stat="identity") 
+  ggplot(aes(neighborhood, chain_percentage, fill = boro)) + geom_bar(stat="identity") +
+  labs(x = "Neighborhoods in NYC", y = "Percentage of chain restaurants") +
+  theme(axis.text.x = element_blank(), axis.ticks = element_blank())
 
 ggplotly(plot_chain_neighbor)
 ```
 
-We have plotted neighborhoods of NYC against their percentage of chain restaurants and grouped them by borough. We see that all the neighborhodds that had a percentage of chain restuarants less than 5% were all part of Brooklyn except Greenwhich village and Soho of Manhattan. Neighborhoods in Queens and Manhattan are spread out across low to high percentage of chain restaurants while most of neighborhoods in Bronx and Staten Island have high percentages. The neighbor hood that had the highest percentage of chain restaurants were Throgs neck and Co-op City of Bronx with 16.5% of chain restaurats out of all restaurats.
+We plot neighborhoods in NYC against their percentage of chain restaurants and group them by borough. We can see that all the neighborhoods with percentage of chain restuarants less than 5% are all in Brooklyn except Greenwhich village and Soho in Manhattan. Neighborhoods in Queens and Manhattan are spread out across low to high percentage of chain restaurants while most of the neighborhoods in Bronx and Staten Island have high percentages. The neighborhood with the highest percentage of chain restaurants are Throgs neck and Co-op City in Bronx with 16.5% of chain restaurats out of all restaurats.
 
 ### Inspection Grade 
 
-```{r r grade_percentage_for_neighborhood, plot_for_neighborhood}
+```{r grade_percentage_for_neighborhood}
 gradea_neighborhood =
   rest_neighborhood %>%
   group_by(neighborhood, grade) %>%
@@ -384,20 +379,25 @@ gradea_neighborhood =
   ungroup(boro) %>%
   mutate(neighborhood = str_to_upper(neighborhood))
 
+# plot for neighborhood
 gradea_neighborhood %>% 
   mutate(neighborhood = as.factor(neighborhood),
          neighborhood = fct_reorder(neighborhood,grade_percent)) %>% 
   plot_ly(x = ~neighborhood, y = ~grade_percent, color = ~neighborhood, type = "bar") %>%
-  layout(showlegend = FALSE)
+  layout(yaxis = list(title = 'Percentage of Grade A restaurants'), 
+         xaxis = list(title = 'Neighborhoods in NYC', showticklabels = FALSE),
+         showlegend = FALSE)
 ```
 
-The difference of percentage of "grade-A" restaurants in each neighborhood is observed. "Throgs Neck and Co-op City" has the greatest grade-A restaurant percentage, around 44.50%. "Sunset Park", however, has the least, around 30.62%. "Washington Heights", where we live, takes the fourth from the end, 34.39%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights".
+The differences on percentage of "grade-A" restaurants between each neighborhood are observed. "Throgs Neck and Co-op City" has the greatest grade-A restaurant percentage, around 44.50%. "Sunset Park", however, has the least, around 30.62%. "Washington Heights", where we live, takes the fourth counting from the end, 34.39%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights"...
 
 
 
 # Formal Analysis and Findings
 
 ## Model Selection Process
+
+First, we match the datasets containing all the restaurant information with the health datasets by common variable "neighborhood".
 
 ```{r getting_data_ready_for_analysis}
 health_neighborhood = 
@@ -422,7 +422,7 @@ combined_model =
   left_join(combined_chain_fastfood_gradea, health_neighborhood, by = "neighborhood")
 ```
 
-We originally have two main predictors of interest, *percentage of chain restaurants* and *percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is 0.0006801903 and for chain_percentage is 0.012419514. 
+### Main predictor selection
 
 ```{r selecting_main_predictor}
 outcome_name = combined_model[,10:12]
@@ -431,25 +431,43 @@ main_predictor_selection = function(outcome){
 
 lm_fastfood =   
   lm(outcome ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() 
+  summary() 
+lm_fastfood_tbl = 
+  as.tibble(lm_fastfood[[4]]) %>%
+  clean_names()
 
 lm_chain =   
   lm(outcome ~ chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() 
+  summary() 
+lm_chain_tbl = 
+  as.tibble(lm_chain[[4]]) %>%
+  clean_names()
 
 lm_both =   
   lm(outcome ~ fastfood_percent + chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() 
+  summary() 
+lm_both_tbl = 
+  as.tibble(lm_both[[4]]) %>%
+  clean_names()
 
-lm_compare = bind_rows(lm_fastfood, lm_chain, lm_both)
+tibble(p_fastfood_sing = lm_fastfood_tbl$pr_t[2],
+       p_chain_sing = lm_chain_tbl$pr_t[2],
+       p_fastfood_both = lm_both_tbl$pr_t[2],
+       p_chain_both = lm_both_tbl$pr_t[3])
 }
 
-map(outcome_name, main_predictor_selection)
+main_predictor_comp = 
+  map(outcome_name, main_predictor_selection) %>%
+  bind_rows()
 ```
 
-Since we also anticipated them to be highly associated with each other, to avoid collinearity, we will need to make decision on which one to keep as the final main predictor. So we put the two predictors in the same model and see how their p-values change. As a result, the fastfood_percent stays significant (p=0.020213583) and the chain_percentage turn insignificant (p=0.651152376). 
+We originally have two main predictors of interest, *Percentage of chain restaurants* and *Percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is `r main_predictor_comp$p_fastfood_sing[1]` and for chain_percentage is `r main_predictor_comp$p_chain_sing[1]`. 
 
-Thus, we keep *percentage of fastfood restaurants* (fastfood_percent) as the main predictor.
+And we also anticipated them to be highly associated with each other, to avoid collinearity, we need to make decision on which one to keep as the final main predictor. So we put the two main predictor candidates in the same model and see how their p-values change. As a result, the fastfood_percent stays significant (p=`r main_predictor_comp$p_fastfood_both[1]`) and the chain_percentage turn insignificant (p=`r main_predictor_comp$p_chain_both[1]`). 
+
+Same selecting processes are repeated for the oucomes diabetes and stroke. Thus, we decide to have *Percentage of fastfood restaurants* (fastfood_percent) as the main predictor.
+
+### Confounder selection
 
 ```{r justifying_confounders}
 outcome_name = combined_model[,10:12]
@@ -477,9 +495,9 @@ confounder_percent_change = percent_change
 map(outcome_name, confounder_percent_change)
 ```
 
-Besides some biologically meaningful covariates (i.e. race, poverty, smoking status, exercise), we also hypothesize the variable *percentage of grade A restuarants* as a potential confounder in the association between fastfood restaurants percentage and the three chronic disease health outcomes.
+Besides some biologically meaningful covariates (i.e. race, poverty, smoking status, exercise), we also hypothesize the variable *Percentage of grade A restuarants* as a potential confounder in the association between fastfood restaurants percentage and the three chronic disease health outcomes.
 
-Here, we are assessing if grade_percent is a significant confounder statistically. Using the 10% change rule of thumb, we find that after adjusting for *percentage of grade A restuarants*, the estimates of fastfood_percent change by 18.83% for outcome obsesity, 3.23% for outcome diabetes and 31.72% for outcome stroke hospitalization.
+Here, we are assessing if grade_percent is a significant confounder statistically. Using the 10% change rule of thumb, we find that after adjusting for *Percentage of grade A restuarants*, the estimates of fastfood_percent change by 18.83% for outcome obsesity, 3.23% for outcome diabetes and 31.72% for outcome stroke hospitalization.
 
 Thus, regarding the final models, we are going to keep grade_percent for obsesity and stroke hospitalization, but take it out and rerun the model for the outcome diabetes.
 
@@ -510,23 +528,28 @@ lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + s
   kable()
 ```
 
-We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gave the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 0.1 percent increase in fastfood restaurants in a neighborhood is associated with 5% increase in the neighborhood's obesity prevalence, while adjusting for other factors.
+We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gives the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants (0.1 unit increase in the percentage of fastfood restaurants) in a neighborhood is associated with 5.94% increase in the neighborhood's obesity prevalence, while adjusting for other factors.
 
-The p-value of the regression coefficients for model with outcomes as diabetes/stroke were both arround 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 1 percent increase in fastfood restaurants in a neighborhood is associated with 17.5% increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 1 percent increase in fastfood restaurants in a neighborhood is associated with increase in 573.5 stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.
+The p-value of the regression coefficients for model with outcomes as diabetes/stroke are both around 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with 1.75% increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with increase in 57.35 stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.
 
-It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to having a lower p-value than the other two health conditions.
+It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet pattern. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to a lower p-value than the other two health conditions.
 
-# Discussion 
-
-Our 2015 Community Health Profiles Open Data has data on obesity, diabetes prevalence rate from 2013 and stroke hospitalization rate from 2012. And the data of geographic distribution of restaurants is from 2014 to 2017. So the health profile data is somewhat earlier than the restaurant geographic distribution. However, as restaurant distribution and chronic disease prevalence rate wouldn’t change much over a few years, the lag between years don’t actually affect our results that much. Therefore, our results can still be valid.  
-
-Although the cuisine type of a restaurant is typically assumed to directly reflect the health level of the food the restaurant provides, we demonstrated here that even the unhealthiest restaurant can offer one or several healthy food, which may bring bias to the research. This was not a low-probability event, it should have required more efficient planning to resolve. Besides, the study at first treats chain restaurants as a cutoff point for unhealthy restaurants. Obviously this cutoff point is ambiguous and farfetched. In the end, the study doesn’t include this as a predictor.  
-
-Lastly, although there is an association between fast-food restaurant distribution and health outcomes, we could not conclude that it is fast-food restaurant causing these health outcomes. Maybe it is because the citizens living in the neighborhood are obese indicating that they like to eat fast food. This will actually result in more fast-food restaurant opening in this neighborhood since the business will be good. Further study need to be conducted before concluding any causation effect.  
 
 
 # Conclusion
 
-Overall, we conclude that there is a significant relationship between obesity/diabetes/stroke and the geographical distribution of fast-food restaurants.
+Overall, we conclude that there is a significant relationship between chronic disease outcomes (i.e. obesity, diabetes, stroke) and the geographical distribution of fast-food restaurants in New York City.
+
+
+
+# Discussion 
+
+Our 2015 Community Health Profiles Open Data has data on obesity, diabetes prevalence rate from 2013 and stroke hospitalization rate from 2012. And the data of geographic distribution of restaurants is from 2014 to 2017. So the health profile data is somewhat earlier than the restaurant geographic distribution. However, as restaurant distribution and chronic disease prevalence rate wouldn’t change much over a few years, the lag between years is not a large concern and theoretically won't affect our results that much. Therefore, our results can still be valid.  
+
+Although the cuisine type of a restaurant is typically assumed to directly reflect the health level of the food that restaurant provides, we demonstrate here that even the unhealthiest restaurant can offer one or several healthy foods, which may bring bias to our research. Besides, our study at first treats chain restaurants as a criteria to identify unhealthy restaurants. Obviously this criteria is ambiguous and farfetched. In the end, the study doesn’t include this as the predictor.  
+
+Lastly, although there is an association between fast-food restaurant geographical distribution and chronic disease outcomes, we could not conclude that it is fast-food restaurant causing these health outcomes. Maybe it is because the citizens living in the neighborhood are obese indicating that they like to eat fast food. This will actually result in more fast-food restaurant opening in this neighborhood since the business will be good. Further study need to be conducted before concluding any causation effect.  
+
+
 
 
