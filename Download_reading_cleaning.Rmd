@@ -209,6 +209,7 @@ health_only_neighborhood %>%
 
 ### Fastfood restaurants by cuisine type---Ruiwei
 
+<<<<<<< HEAD
 ```{r identifying_fastfood_cuisine_type, eval=FALSE}
 # Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
 
@@ -217,6 +218,9 @@ rest_inspection %>%
   arrange(cuisine_description) %>%
   count(cuisine_description)
 ```
+=======
+**Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).**
+>>>>>>> parent of 60c4667... changing the wording part for summary
 
 ```{r calculating_percentage}
 # calculating the total number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
