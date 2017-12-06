@@ -281,9 +281,10 @@ fastfood_neighborhood =
 fastfood_neighborhood %>%
   mutate(neighborhood = as.factor(neighborhood),
          n_rest = as.numeric(n_rest),
+         n_nonfastfood = n_rest - n_fastfood,
          neighborhood = fct_reorder(neighborhood, percent_fastfood)) %>%
-  plot_ly(., x = ~neighborhood, y = ~n_rest, type = 'bar', name = 'total restaurants') %>%
-  add_trace(y = ~n_fastfood, name = 'fastfood restaurants') %>%
+  plot_ly(., x = ~neighborhood, y = ~n_fastfood, type = 'bar', name = 'fastfood restaurants') %>%
+  add_trace(y = ~n_nonfastfood, name = 'non-fastfood restaurants') %>%
   layout(yaxis = list(title = 'number of restaurants'), 
          xaxis = list(title = 'neighborhood (ordered by percentage of fastfood restaurants)',
                       tickangle = 45),
@@ -428,9 +429,9 @@ gradea_neighborhood %>%
 
 # Formal Analysis and Findings
 
-## Model selection
+## Model Selection Process
 
-```{r final_}
+```{r getting_data_ready_for_analysis}
 health_neighborhood = 
   health %>%
   mutate(neighborhood = str_to_upper(name)) %>%
@@ -443,59 +444,61 @@ combined_chain_fastfood =
   fastfood_neighborhood %>%
   mutate(fastfood_percent = percent_fastfood) %>%
   select(neighborhood, fastfood_percent) %>%
-  right_join(combined_chain)
+  right_join(combined_chain, by = "neighborhood")
 combined_chain_fastfood_gradea = 
   gradea_neighborhood %>%
   select(neighborhood, grade_percent) %>%
-  right_join(combined_chain_fastfood)
+  right_join(combined_chain_fastfood, by = "neighborhood")
 
 combined_model =  
   left_join(combined_chain_fastfood_gradea, health_neighborhood, by = "neighborhood")
-
-lm(obesity ~ fastfood_percent + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
-
-plot(obesity ~ fastfood_percent, combined_model)
-plot(obesity ~ chain_percentage, combined_model)
-
-
-lm(obesity ~ chain_percentage + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_model) %>%
-  summary() 
-
-lm(obesity ~ fastfood_percent + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_model) %>%
-  summary()
 ```
 
-## Fastfood restaurants by cuisine type---Ruiwei
-
-```{r lm_fastfood_neighborhood}
-# combine the dataset with health data and run linear simple regression models
-
-health_neighborhood = 
-  health %>%
-  mutate(neighborhood = str_to_upper(name)) %>%
-  select(-name)
-
-combined_neighborhood = 
-  left_join(fastfood_neighborhood, health_neighborhood, by = "neighborhood")
-
-# fit multiple linear regression model between the three health outcomes and percentage of fastfood restaurants after adjusting fro race, age, poverty, smoking status and exercise status
-
-lm(obesity ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+```{r selecting_main_predictor}
+lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 
-lm(diabetes ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+lm(obesity ~ chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 
-lm(stroke_hosp ~ percent_fastfood + racewhite_rate + age0to44_rate + poverty + smoking + exercise, combined_neighborhood) %>%
+
+lm(obesity ~ fastfood_percent + chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 ```
 
-**According to the results of multiple linear regressions, we can conclude that after adjusting for race, age, poverty, smoking status and exercise status, there is significant relationships between the three chronic disease outcomes and the percentage of fastfood restuarants within boroughs. (Obesity: p-value=0.000909491; Diabetes: p-value=3.756556e-03; Hospitalized Stroke: p-value=0.0039134849)**
+**We originally have two main predictors of interest, *percentage of chain restaurants* and *percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value **
+
+**We will need to make decision on which to keep as the final main predictor.**
+
+****
+
+```{r justifying_confounders}
+lm(diabetes ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() %>%
+  kable()
+lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() %>%
+  kable()
+```
+
+## Final Models and Findings
+
+```{r final_model}
+lm(obesity ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() %>%
+  kable()
+
+lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() %>%
+  kable()
+
+lm(stroke_hosp ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() %>%
+  kable()
+```
 
 ## Restaurant Chains---Sara
 
