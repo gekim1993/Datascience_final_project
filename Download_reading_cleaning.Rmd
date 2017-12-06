@@ -171,8 +171,7 @@ health_only_neighborhood <- health[-c(1:6),] %>%
   mutate(neighborhood = as.factor(neighborhood))
 ##Plotting for outcome in different neighborhood
 
-
-health_only_neighborhood %>%
+obseity_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
   ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
@@ -181,7 +180,7 @@ health_only_neighborhood %>%
   labs(title = "Neighborhood with 25 percent more obesity rate")
 
 
-health_only_neighborhood %>%
+diabetes_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
   filter(diabetes > 10) %>% 
   ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +   
@@ -190,7 +189,7 @@ health_only_neighborhood %>%
   labs(title = "Neighborhood with 10 percent more diabetes rate")
 
 
-health_only_neighborhood %>%
+stroke_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
   filter(stroke_hosp > 300) %>% 
   ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + 
@@ -199,7 +198,9 @@ health_only_neighborhood %>%
         legend.position = "none") +
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
 
-
+ggplotly(obseity_bar_neighborhood)
+ggplotly(diabetes_bar_neighborhood)
+ggplotly(stroke_bar_neighborhood)
 ```
 
 **Summary: Williamsbridge and Baychester have the highest obesity rate, up to 32%. East New York and Starrett City have the highest diabetes rate, up to 17 percent. BUshwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults. Morrisania and Crotona has the highest percent of poverty rate, up to 40%. Fiancial district has the highest percent of young peoeple, up to 67%.**
@@ -250,7 +251,7 @@ percent_fastfood_neighborhood = function(name_neighborhood){
   rest_fastfood_distinct_neighborhood = 
     rest_fastfood_neighborhood %>%
     filter(neighborhood == name_neighborhood) %>%
-    distinct(camis, cuisine_description)
+    distinct(camis)
   
   n_fastfood_neighborhood = nrow(rest_fastfood_distinct_neighborhood)
     
@@ -309,22 +310,23 @@ head(chain_rest, 10)
 
 **I have scraped list of 75 national chain restaurants from the wikipedia page (https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual) now I will join this dataset with restaurant inspection data to choose only the chain restaurants in NYC.**
 
-```{r joining chain and rest_inspection}
-# removing punctuations in chain_rest & restaurant inspections
+```{r joining chain and rest_neighborhood}
+# removing punctuations in chain_rest & restaurant inspections (neighborhoods)
 chain_rest_str = 
   chain_rest  %>%
   mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
 
-rest_inspect_str = rest_inspection %>% 
+rest_neigh_str = rest_neighborhood %>% 
   mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
 
 # Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-nyc_chain = 
-  right_join(rest_inspect_str, chain_rest_str) %>%
-  filter(!is.na(camis)) %>%
-  distinct(camis, dba, boro)
 
-nyc_chain %>%
+neighborhood_chain = 
+  right_join(rest_neigh_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, neighborhood, boro)
+
+neighborhood_chain %>%
   group_by(dba) %>%
   summarise(n = n()) %>%
   arrange(desc(n)) %>%
@@ -332,18 +334,6 @@ nyc_chain %>%
 ```
 
 **The combined dataframe, nyc_chain has `nrow(nyc_chain)` observations. Also, there were 33 different chain restaurants extracted. The chart is showing the 10 chain restaurants in descending order.**
-
-```{r joining_Chains_neighborhood}
-# removing punctuations in restaurant inspections
-rest_neigh_str = rest_neighborhood %>% 
-  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
-
-# Matching the two datasets(neighborhood restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-neighborhood_chain = 
-  right_join(rest_neigh_str, chain_rest_str) %>%
-  filter(!is.na(camis)) %>%
-  distinct(camis, dba, neighborhood, boro)
-```
 
 ```{r chain percent calculation}
 # counting chains in neighborhoods
@@ -487,7 +477,7 @@ map(outcome_name, confounder_percent_change)
 ## Final Models and Findings
 
 ```{r final_model}
-lm(obesity ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 
@@ -495,24 +485,114 @@ lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, 
   broom::tidy() %>%
   kable()
 
-lm(stroke_hosp ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 ```
 
+<<<<<<< HEAD
+## Restaurant Chains---Sara
+
+```{r joining_Chains_neighborhood}
+# removing punctuations in restaurant inspections
+rest_neigh_str = rest_neighborhood %>% 
+  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
+
+# Matching the two datasets(neighborhood restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
+neighborhood_chain = 
+  right_join(rest_neigh_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, neighborhood)
+```
+
+```{r chain percent calculation}
+# counting chains in neighborhoods
+
+neigh_count_chain = neighborhood_chain %>%
+  group_by(neighborhood) %>%
+  summarise(chain_n = n())
+
+neigh_count_rest = rest_neighborhood %>%
+  distinct(neighborhood, camis) %>%
+  group_by(neighborhood) %>%
+  summarise(res_n = n())
+
+# calculating percentage of chains in each boro
+percent_neighborhood_chain = left_join(neigh_count_chain, neigh_count_rest) %>%
+  mutate(chain_percentage = chain_n/res_n,
+         neighborhood = str_to_upper(neighborhood))
+
+# joinining with health data
+health_chain_neighborhood = left_join(percent_neighborhood_chain, health_only_neighborhood) 
+```
+
+```{r lm function}
+# function for modeling health outcome and percentage of chain restaurants
+
+lm_neighborhood = function(health_outcome){
+  
+ graphs_chain_health = health_chain_neighborhood %>%
+  mutate(boro = forcats::fct_reorder(neighborhood, health_outcome)) %>%
+  ggplot(aes(chain_percentage, health_outcome, color = neighborhood)) + geom_point() + theme(legend.position="none")
+ 
+ reg_chain = lm(health_outcome ~ chain_percentage + racewhite_rate + age0to44_rate + poverty + smoking + exercise, data = health_chain_neighborhood) %>%
+   summary()
+
+list(graphs_chain_health, reg_chain)
+# function that takes a input of column in health_chain_neighborhood and gives output of:
+ 
+# 1. graphs_health will give a graph showing the relationship between health outcomes in neighborhoods and their percentage of chain restaurants
+
+# 2.reg_chain gives an output of the linear regression result
+}
+```
+
+```{r chain obesity regression}
+lm_neighborhood(health_chain_neighborhood$obesity)
+
+# I tried log transformation and it's even better!
+
+#health_chain_neighborhood %>%
+#  mutate(boro = forcats::fct_reorder(neighborhood, obesity)) %>%
+#  ggplot(aes(chain_percentage, obesity^2, color = neighborhood)) + geom_point() + #theme(legend.position="none")
+#
+#lm(obesity^2 ~ chain_percentage + racewhite_rate + age0to44_rate + poverty + smoking + #exercise, data = health_chain_neighborhood) %>%
+#   summary()
+```
+
+**Fitting a regression line with predictors chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise, we can see that the percentage of chains is a significant predictor with p-value, 0.01057. Holding all the other predictors constant, 62.2% increase in percentage of obesity in NYC neighborhoods is associated with 1% increase in chain restaurants. From the graph of percentage of chain restaurants and percentage of obesity, we can see there is a positive trend.**
+
+```{r modeling neighborhood chains and diabetes}
+lm_neighborhood(health_chain_neighborhood$diabetes)
+```
+
+**We can also visually see there is positive correlation between diabetes and percentage of chains. From the linear regression analysis, the results show that percentage of chain restaurants in neighborhoods is a significant predictor of percentage of diabetics in NYC neighborhoods**
+
+```{r modeling neighborhood chains and stroke}
+lm_neighborhood(health_chain_neighborhood$stroke_hosp)
+```
+
+**When fitting chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise on rate of stroke however, the outcomes indicates that chain_percentage is not a significant predictor at significance level 0.05.**  
+
+**We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gave the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 0.1 percent increase in fastfood restaurants in a neighborhood is associated with 5% increase in the neighborhood's obesity prevalence, while adjusting for other factors.**  
+
+**The p-value of the regression coefficients for model with outcomes as diabetes/stroke were both arround 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 1 percent increase in fastfood restaurants in a neighborhood is associated with 17.5% increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 1 percent increase in fastfood restaurants in a neighborhood is associated with increase in 573.5 stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.**  
+
+
+**It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to having a lower p-value than the other two health conditions**  
+
+# Discussion---to do later 
+
+**Our 2015 Community Health Profiles Open Data has data on obesity, diabetes prevalence rate from 2013 and stroke hospitalization rate from 2012. And the data of geographic distribution of restaurants is from 2014 to 2017. So the health profile data is somewhat earlier than the restaurant geographic distribution. However, as restaurant distribution and chronic disease prevalence rate wouldn’t change much over a few years, the lag between years don’t actually affect our results that much. Therefore, our results can still be valid.**  
+
+**Although the cuisine type of a restaurant is typically assumed to directly reflect the health level of the food the restaurant provides, we demonstrated here that even the unhealthiest restaurant can offer one or several healthy food, which may bring bias to the study. This was not a low-probability event, it should have required more efficient planning to resolve. Besides, our project at first treats chain restaurants as a cutoff point for unhealthy restaurants. Obviously this cutoff point is ambiguous and farfetched. In the end, this project include this as a predictor.**  
+
+**Lastly, although there is an association between fast-food restaurant distribution and health outcomes, we could not conclude that it is fast-food restaurant causing these health outcomes. Maybe it is because the citizens living in the neighborhood are obese indicating that they like to eat fast food. This will actually result in more fast-food restaurant opening in this neighborhood since the business will be good. Further study need to be conducted before concluding any causation effect.**  
 
 
 # Conclusion---to do later 
 
-write
-
-
-
-# Discussion---to do later 
-
-write
-
-
+**Overall, we conclude that there is a significant relationship between obesity/diabetes/stroke and the geographical distribution of fast-food restaurants.**
 
 
 
