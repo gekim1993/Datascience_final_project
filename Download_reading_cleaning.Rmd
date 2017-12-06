@@ -316,22 +316,23 @@ head(chain_rest, 10)
 
 **I have scraped list of 75 national chain restaurants from the wikipedia page (https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States#Fast-casual) now I will join this dataset with restaurant inspection data to choose only the chain restaurants in NYC.**
 
-```{r joining chain and rest_inspection}
-# removing punctuations in chain_rest & restaurant inspections
+```{r joining chain and rest_neighborhood}
+# removing punctuations in chain_rest & restaurant inspections (neighborhoods)
 chain_rest_str = 
   chain_rest  %>%
   mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
 
-rest_inspect_str = rest_inspection %>% 
+rest_neigh_str = rest_neighborhood %>% 
   mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
 
 # Matching the two datasets(restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-nyc_chain = 
-  right_join(rest_inspect_str, chain_rest_str) %>%
-  filter(!is.na(camis)) %>%
-  distinct(camis, dba, boro)
 
-nyc_chain %>%
+neighborhood_chain = 
+  right_join(rest_neigh_str, chain_rest_str) %>%
+  filter(!is.na(camis)) %>%
+  distinct(camis, dba, neighborhood, boro)
+
+neighborhood_chain %>%
   group_by(dba) %>%
   summarise(n = n()) %>%
   arrange(desc(n)) %>%
@@ -339,18 +340,6 @@ nyc_chain %>%
 ```
 
 **The combined dataframe, nyc_chain has `nrow(nyc_chain)` observations. Also, there were 33 different chain restaurants extracted. The chart is showing the 10 chain restaurants in descending order.**
-
-```{r joining_Chains_neighborhood}
-# removing punctuations in restaurant inspections
-rest_neigh_str = rest_neighborhood %>% 
-  mutate(dba = str_replace_all(dba, "[[:punct:]]", ""))
-
-# Matching the two datasets(neighborhood restaurant inspection data that has all punctuation removed from dba(restaurant name) and list of chain restaurants by dba)
-neighborhood_chain = 
-  right_join(rest_neigh_str, chain_rest_str) %>%
-  filter(!is.na(camis)) %>%
-  distinct(camis, dba, neighborhood, boro)
-```
 
 ```{r chain percent calculation}
 # counting chains in neighborhoods
@@ -462,7 +451,7 @@ lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, 
 ## Final Models and Findings
 
 ```{r final_model}
-lm(obesity ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 
@@ -470,12 +459,16 @@ lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, 
   broom::tidy() %>%
   kable()
 
-lm(stroke_hosp ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
   broom::tidy() %>%
   kable()
 ```
 
+**We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gave the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 0.1 percent increase in fastfood restaurants in a neighborhood is associated with 5% increase in the neighborhood's obesity prevalence, while adjusting for other factors.**
 
+**The p-value of the regression coefficients for model with outcomes as diabetes/stroke were both arround 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level.**
+
+**It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to having a lower p-value than the other two health conditions**
 
 # Conclusion---to do later 
 
