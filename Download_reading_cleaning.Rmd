@@ -9,7 +9,8 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      collapse = TRUE)
 library(tidyverse)
 library(rvest)
 library(httr)
@@ -29,27 +30,31 @@ library(knitr)
 
 # Motivation---Tim
 
-**This year, a report from Centers for Disease Control and Prevention revealed that America’s obesity rate has reached a record high. Contrasting to popular belief, New Yorkers are not so safe from the obesity epidemic, as more than half of adult New Yorkers are either overweight or obese. Studies show that the rise in the obesity epidemic is partly due to disparities in food environment; it is harder for some to eat healthier because their options are limited. This project intends to look deeper into the relationship between food environment in NYC and obesity rate along with diabetes rate and stroke hospitalization rate.**
+**This year, a report from Centers for Disease Control and Prevention revealed that America’s obesity rate has reached a record high. Contrasting to popular belief, New Yorkers are not so safe from the obesity epidemic, as more than half of adult New Yorkers are either overweight or obese. Studies show that the rise in the obesity epidemic is partly due to disparities in food environment; it is harder for some to eat healthier because their options are limited.**  
+
+**For example, I and my fellow classamate often go out to McDonald that are near our home for convenience, even though these restaurants were not healthy. Environment can affect our health behaviours imperceptibly.**  
+
+**This project intends to look deeper into the relationship between food environment in NYC and obesity rate along with diabetes rate and stroke hospitalization rate.**
 
 
 
-# Related Work---Tim
+# Inspiration from other related Work---Tim
 
 **In 2008, aggregating Google search queries, Google attempted to make accurate predictions about flu activity. Then what kind of infomation on the internet that can predict the prevelence of chronic disease such as obesity, diabetes or cancer?**  
-
-**Another inspiration is that, I and my fellow classamate often go out to restaurants that are near our home for convenience, even though these restaurants were not healthy. Environment can affect some health behaviours imperceptibly.**
 
  
  
 # Initial questions---Tim
 
-**1. Can the percentage of certain fast-food restaurant be related to obesity, diabetes and stroke rate in different neighborhoods of NYC?** 
+**1. Can the percentage of nation-wide chain and fast-food restaurants in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate ?**  
 
-**2. Can the percentage of health inspection grade A restaurant be related to obesity, diabetes and stroke rate in different neighborhoods of NYC?** 
+**2.Can the percentage of fast-food restaurant (defined by cuisine description in the restaurant inspection dataset) in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate ?**  
 
-**3. Can the composite restaurant health score of each neighborhood be related to chronic disease rate?**
+**3.Can the percentage of health inspection grade A restaurant in different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate?**  
+ 
+4. Can the composite restaurant health score of different neighborhood of NYC be related to their obesity, diabetes and stroke hospitalization rate?  
 
-**For the first two questions, we stick to it. For the third question, we change the main predictor to percentage of fast food cuisine type since it was easy to acquire in the data. Composite restaurant health score were to subjective and difficult to assess. Moreover, we calculated the boro level model first due to the difficulties we encountered in scaping zipcode-neighborhood data. However, after some struggle, we still managed to get the neighborhood information and analyze the data accordingly.**
+**For the first three questions, we stick to it. Since the percentage of health inspection grade A restaurant is not a significant predictor, we later put it into the model as a confounder. Moreover, we deleted the fourth problem. Composite restaurant health score were to subjective and difficult to assess. Moreover, we calculated the boro level model first due to the difficulties we encountered in scaping zipcode-neighborhood data. However, after some struggle, we still managed to get the neighborhood information and analyze the data accordingly.**    
 
 
 
@@ -59,16 +64,38 @@ library(knitr)
 
 **1. NYC restaurant inspection:**
 
-https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j 
+https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j  
+
+This dataset contains the data for restaurant inspection in NYC from August 1, 2014 to December 5th, 2017. Every row is a restaurant inspection record that includes the name of the restaurant, zipcode, cuisine type description, inspection grade (A as the best grade) and so on. Since this dataset has the inspection data for 3 years, it is almost certained that it has the data for all the restuarants in NYC in 2014.  
+
+**Variable used in this datasets**  
+DBA: Name of the restaurant  
+BORO: name of the boro  
+ZIPCODE: the zipcode of the restaurant  
+CUISINE DESCRIPTION: the kind of food that the restaurant is providing  
+GRADE: Inspection grade for the specific inspection.  
 
 **2. 2015 Community Health Profiles Open Data: ** 
 
-https://www1.nyc.gov/site/doh/data/data-publications/profiles.page
+https://www1.nyc.gov/site/doh/data/data-publications/profiles.page  
+
+This dataset contains NYC every neighborhoods' demographic (percentage of white race, poverty percentage), health (age-adjusted percent of adult exercised in the last 30 days, age-adjusted percent of adults as a smoker) and our main outcome (Age-adjusted percent of adults that is obese (BMI of 30 or gthe reater), ge-adjusted percent of adults, Age-adjusted rate of hospitalizations due to stroke (cerebrovascular disease) per 100,000 adults)
+
+**Variable used in this datasets**  
+Name: the name for the neigborhood.  
+Racewhite_Rate: the percentage for white race  
+Poverty: Percent of individuals living below the federal poverty threshold  
+Smoking: age-adjusted percent of adults as a smoker
+Exercise: Age-adjusted percent of adults that reported getting any exercise in the last 30 days  
+Obesity: Age-adjusted percent of adults that is obese (BMI of 30 or greater) based on self-reported height and weight  
+Diabetes: Age-adjusted percent of adults that had ever been told by a healthcare professional that they have diabetes  
+Stroke_Hosp: Age-adjusted rate of hospitalizations due to stroke (cerebrovascular disease) per 100,000 adults  
   
-**These data were rather easy to acquire, since they can be downloaded by CSV format. Because health and demographic data are grouped by neighborhood but the restaurant inspection data was using zipcodes. We had to match the zipcode and neighborhood name in order to merge the datasets which was the hardest.** 
+**3. Web scraping for what zipcodes each neighborhood contains **  
+Because Community Health Profiles Open Data is has only neighborhood level information, so we have to aggregate neighborhood level information from the restaurant inspeciton data. However, the restaurant inspection data was using zipcodes for every restaurant. Therefore, we had to add the neighborhood name to every restaurant, so that we can group by neighborhood then calculate the percentage for every neighborhood.   
 
-**First, we scraped the table data from https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm. However the neighborhood name and combinations were different from the health profile data we downloaded. We cannot merge the two datasets. Then we tried to look for the raw classification for the neigborhoods in health data from New York University's Furman Center for Real Estate and Urban Policy and the NYC Department of City Planning. However, still no luck becuase the neighborhood was not divided by zipcode areas. Then we tried the hardest way: search the name of the neighborhood on Google and finding the matching zipcodes. It worked out well, but it was not precise, thus we left out some of the restaurants without a matching neighborhood name.**
-
+First, we scraped the table data from https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm. However the neighborhood name and combinations were different from the health profile data we downloaded. We cannot merge the two datasets. Then we tried to look for the raw classification for the neigborhoods in health data from New York University's Furman Center for Real Estate and Urban Policy and the NYC Department of City Planning. However, still no luck becuase the neighborhood was not divided by zipcode areas. Then we tried the hardest way: search the name of the neighborhood on Google and finding the matching zipcodes. It worked out well, but it was not precise, because neighborhoods were not divided according to the area of the zipcode. Different neighborhoods have the same zipcodes.  
+**In order to be unbiased in this process, if two neighborhoods contains the same zipcode area, we will randomly assign this zipcode to only one neighborhood.**  
 
 ## Data Import and Cleaning---Tim
 
@@ -116,14 +143,10 @@ rest_inspection = get_all_inspections(url) %>%
 ```{r reading and cleaning the health indicator data}
 download.file("https://www1.nyc.gov/assets/doh/downloads/excel/episrv/2015_CHP_PUD.xlsx", mode="wb", destfile = "health.xlsx")
 health <- read_excel("health.xlsx", sheet = "CHP_all_data") %>% 
-  select(Name, Racewhite_Rate, Age0to17_rate, 
-         Age18to24_rate, Age25to44_rate, Poverty, Unemployment,
+  select(Name, Racewhite_Rate, Poverty, Unemployment,
          Smoking, Exercise,
          Obesity, Diabetes, Stroke_Hosp) %>% 
-  clean_names() %>% 
-  mutate(age0to44_rate = age0to17_rate + age18to24_rate + age25to44_rate) %>% 
-  select(-age0to17_rate, -age18to24_rate, -age25to44_rate)
-  
+  clean_names() 
 ```
 
 **Matching the neighborhood names with restaurant zipcodes:**
@@ -175,27 +198,6 @@ health_only_neighborhood %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.position = "none") +
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
-
-
-
-##Plotting for some adjusted variables
-
-
-health_only_neighborhood %>%
-  mutate(neighborhood = fct_reorder(neighborhood, poverty)) %>% 
-  filter(poverty > 20) %>% 
-  ggplot(aes(x = neighborhood,y = poverty, fill = neighborhood)) + geom_col() +  
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
-  labs(title = "Neighborhood with 20 percent or more poverty")
-
-
-health_only_neighborhood %>%
-  mutate(neighborhood = fct_reorder(neighborhood, age0to44_rate)) %>% 
-  filter(age0to44_rate > 60) %>% 
-  ggplot(aes(x = neighborhood,y = age0to44_rate, fill = neighborhood)) + 
-  geom_col() +    
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
-  labs(title = "Neighborhood with 60 percent or more people under age 44")
 
 
 ```
