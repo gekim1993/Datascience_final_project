@@ -209,18 +209,9 @@ health_only_neighborhood %>%
 
 ### Fastfood restaurants by cuisine type---Ruiwei
 
-<<<<<<< HEAD
-```{r identifying_fastfood_cuisine_type, eval=FALSE}
-# Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).
+**Fastfood restaurants are identified by their cuisine descriptions given in the inspection data. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).**
 
-rest_inspection %>%
-  mutate(dba = str_to_upper(dba)) %>%
-  arrange(cuisine_description) %>%
-  count(cuisine_description)
-```
-=======
-**Identify fastfood restaurants by their cuisine types. We print out the cuisine type list (n=85) and let everyone circle the ones they think is fastfood and we use the union as our rule (use union because it's more conservative).**
->>>>>>> parent of 60c4667... changing the wording part for summary
+**We classify cuisine descriptions "Bagels/Pretzels", "Bottled beverages, including water, sodas, juices, etc.", "Chicken", "Delicatessen", "Donuts", "Hamburgers", "Hotdogs", "Hotdogs/Pretzels", "Ice Cream, Gelato, Yogurt, Ices", "Nuts/Confectionary", "Pancakes/Waffles", "Pizza", "Soul Food", "Sandwiches", "Sandwiches/Salads/Mixed Buffet" and "Soups & Sandwiches" as fastfood restaurants. And then we calculate the total number of restaurants **
 
 ```{r calculating_percentage}
 # calculating the total number of restaurants and the number of fastfood restaurants in the neighborhood, as well as the percentage of fastfood restaurants.
@@ -424,33 +415,66 @@ combined_model =
 ```
 
 ```{r selecting_main_predictor}
-lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
+outcome_name = combined_model[,10:12]
 
-lm(obesity ~ chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
+main_predictor_selection = function(outcome){
 
-lm(obesity ~ fastfood_percent + chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
+lm_fastfood =   
+  lm(outcome ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+
+lm_chain =   
+  lm(outcome ~ chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+
+lm_both =   
+  lm(outcome ~ fastfood_percent + chain_percentage + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+
+lm_compare = bind_rows(lm_fastfood, lm_chain, lm_both)
+}
+
+map(outcome_name, main_predictor_selection)
 ```
 
-**We originally have two main predictors of interest, *percentage of chain restaurants* and *percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is 0.0006801903 and for chain_percent is 0.012419514.**
+**We originally have two main predictors of interest, *percentage of chain restaurants* and *percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is 0.0006801903 and for chain_percentage is 0.012419514. **
 
-**We will need to make decision on which to keep as the final main predictor. So we put the two predictors in the same model and **
+**Since we also anticipated them to be highly associated with each other, to avoid collinearity, we will need to make decision on which one to keep as the final main predictor. So we put the two predictors in the same model and see how their p-values change. As a result, the fastfood_percent stays significant (p=0.020213583) and the chain_percentage turn insignificant (p=0.651152376). **
 
-****
+**Thus, we keep *percentage of fastfood restaurants* (fastfood_percent) as the main predictor.**
 
 ```{r justifying_confounders}
-lm(diabetes ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
-lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
-  kable()
+outcome_name = combined_model[,10:12]
+
+confounder_percent_change = function(outcome){
+lm_adjusted = 
+  lm(outcome ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  summary() 
+lm_adjusted_tbl = 
+  as.tibble(lm_adjusted[[4]]) %>%
+  clean_names()
+
+lm_crude =
+  lm(outcome ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  summary() 
+lm_crude_tbl = 
+  as.tibble(lm_crude[[4]]) %>%
+  clean_names()
+
+percent_change = (lm_crude_tbl$estimate[2] - lm_adjusted_tbl$estimate[2]) /lm_crude_tbl$estimate[2]
+
+confounder_percent_change = percent_change
+}
+
+map(outcome_name, confounder_percent_change)
 ```
+
+**Besides some biologically meaningful covariates (i.e. race, poverty, smoking status, exercise), we also hypothesize the variable *percentage of grade A restuarants* as a potential confounder in the association between fastfood restaurants percentage and the three chronic disease health outcomes.**
+
+**Here, we are assessing if grade_percent is a significant confounder statistically. Using the 10% change rule of thumb, we find that after adjusting for *percentage of grade A restuarants*, the estimates of fastfood_percent change by 18.83% for outcome obsesity, 3.23% for outcome diabetes and 31.72% for outcome stroke hospitalization.**
+
+**Thus, regarding the final models, we are going to keep grade_percent for obsesity and stroke hospitalization, but take it out and rerun the model for the outcome diabetes.**
+
 
 ## Final Models and Findings
 
