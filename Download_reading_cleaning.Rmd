@@ -171,8 +171,7 @@ health_only_neighborhood <- health[-c(1:6),] %>%
   mutate(neighborhood = as.factor(neighborhood))
 ##Plotting for outcome in different neighborhood
 
-
-health_only_neighborhood %>%
+obseity_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, obesity)) %>% 
   filter(obesity > 25) %>% 
   ggplot(aes(x = neighborhood,y = obesity, fill = neighborhood)) + geom_col() +  
@@ -181,7 +180,7 @@ health_only_neighborhood %>%
   labs(title = "Neighborhood with 25 percent more obesity rate")
 
 
-health_only_neighborhood %>%
+diabetes_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, diabetes)) %>% 
   filter(diabetes > 10) %>% 
   ggplot(aes(x = neighborhood,y = diabetes, fill = neighborhood)) + geom_col() +   
@@ -190,7 +189,7 @@ health_only_neighborhood %>%
   labs(title = "Neighborhood with 10 percent more diabetes rate")
 
 
-health_only_neighborhood %>%
+stroke_bar_neighborhood <- health_only_neighborhood %>%
   mutate(neighborhood = fct_reorder(neighborhood, stroke_hosp)) %>% 
   filter(stroke_hosp > 300) %>% 
   ggplot(aes(x = neighborhood,y = stroke_hosp, fill = neighborhood)) + 
@@ -199,7 +198,9 @@ health_only_neighborhood %>%
         legend.position = "none") +
   labs(title = "Neighborhood with 300 more stroke hospitalization in 100,000 adults")
 
-
+ggplotly(obseity_bar_neighborhood)
+ggplotly(diabetes_bar_neighborhood)
+ggplotly(stroke_bar_neighborhood)
 ```
 
 **Summary: Williamsbridge and Baychester have the highest obesity rate, up to 32%. East New York and Starrett City have the highest diabetes rate, up to 17 percent. BUshwick has the highest stroke hospitalization in 100,000 adults, up to 300 adults. Morrisania and Crotona has the highest percent of poverty rate, up to 40%. Fiancial district has the highest percent of young peoeple, up to 67%.**
@@ -257,7 +258,7 @@ percent_fastfood_neighborhood = function(name_neighborhood){
   rest_fastfood_distinct_neighborhood = 
     rest_fastfood_neighborhood %>%
     filter(neighborhood == name_neighborhood) %>%
-    distinct(camis, cuisine_description)
+    distinct(camis)
   
   n_fastfood_neighborhood = nrow(rest_fastfood_distinct_neighborhood)
     
@@ -584,16 +585,20 @@ lm_neighborhood(health_chain_neighborhood$stroke_hosp)
 **When fitting chain_percentage, racewhite_rate, age0to44_rate, poverty,smoking, and exercise on rate of stroke however, the outcomes indicates that chain_percentage is not a significant predictor at significance level 0.05.**
 
 
+# Discussion---to do later 
+
+Our 2015 Community Health Profiles Open Data has data on obesity, diabetes prevalence rate from 2013 and stroke hospitalization rate from 2012. And the data of geographic distribution of restaurants is from 2014 to 2017. So the health profile data is somewhat earlier than the restaurant geographic distribution. However, as restaurant distribution and chronic disease prevalence rate wouldn’t change much over a few years, the lag between years don’t actually affect our results that much. Therefore, our results can still be valid.  
+
+Although the cuisine type of a restaurant is typically assumed to directly reflect the health level of the food the restaurant provides, we demonstrated here that even the unhealthiest restaurant can offer one or several healthy food, which may bring bias to the research. This was not a low-probability event, it should have required more efficient planning to resolve. Besides, our project at first treats chain restaurants as a cutoff point for unhealthy restaurants. Obviously this cutoff point is ambiguous and farfetched. In the end, we didn't include this as a predictor.  
+
+Lastly, although there is an association between fast-food restaurant distribution and health outcomes, we could not conclude that it is fast-food restaurant causing these health outcomes. Maybe it is because the citizens living in the neighborhood are obese indicating that they like to eat fast food. This will actually result in more fast-food restaurant opening in this neighborhood since the business will be good. Further study need to be conducted before concluding any causation effect.
+ 
+
 
 # Conclusion---to do later 
 
 write
 
-
-
-# Discussion---to do later 
-
-write
 
 
 
