@@ -337,7 +337,7 @@ neighborhood_chain %>%
   head(10)
 ```
 
-The combined dataset "neighborhood_chain" has `r nrow(neighborhood_chain)` observations. Also, there were 33 different chain restaurants extracted. 
+The combined dataset "neighborhood_chain" has `r nrow(neighborhood_chain)` observations. Also, there were `r n_distinct(neighborhood_chain$dba)` different chain restaurants extracted. 
 
 ```{r chain percent calculation}
 # counting chains in neighborhoods
@@ -363,9 +363,10 @@ plot_chain_neighbor = percent_neighborhood_chain %>%
   theme(axis.text.x = element_blank(), axis.ticks = element_blank())
 
 ggplotly(plot_chain_neighbor)
+max(percent_neighborhood_chain$chain_percentage)
 ```
 
-We plot neighborhoods in NYC against their percentage of chain restaurants and group them by borough. We can see that all the neighborhoods with percentage of chain restuarants less than 5% are all in Brooklyn except Greenwhich village and Soho in Manhattan. Neighborhoods in Queens and Manhattan are spread out across low to high percentage of chain restaurants while most of the neighborhoods in Bronx and Staten Island have high percentages. The neighborhood with the highest percentage of chain restaurants are Throgs neck and Co-op City in Bronx with 16.5% of chain restaurats out of all restaurats.
+We plot neighborhoods in NYC with their percentage of chain restaurants and group them by borough. We can see that neighborhoods with those smallest percentages of chain restuarants are mostly in Brooklyn except for Greenwhich Village and Soho and Lower East Side and Chinatown in Manhattan. Neighborhoods in Queens and Manhattan are spread out across low to high percentage of chain restaurants while most of the neighborhoods in Bronx and Staten Island have high percentages. The neighborhood with the highest percentage of chain restaurants is Throgs neck and Co-op City in Bronx with `r paste0(format(max(percent_neighborhood_chain$chain_percentage) * 100, digits = 3))`% of chain restaurats out of all restaurats.
 
 ### Inspection Grade 
 
@@ -387,9 +388,10 @@ gradea_neighborhood %>%
   layout(yaxis = list(title = 'Percentage of Grade A restaurants'), 
          xaxis = list(title = 'Neighborhoods in NYC', showticklabels = FALSE),
          showlegend = FALSE)
+max()
 ```
 
-The differences on percentage of "grade-A" restaurants between each neighborhood are observed. "Throgs Neck and Co-op City" has the greatest grade-A restaurant percentage, around 44.50%. "Sunset Park", however, has the least, around 30.62%. "Washington Heights", where we live, takes the fourth counting from the end, 34.39%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights"...
+The differences on percentage of "grade-A" restaurants between each neighborhood are observed. "Throgs Neck and Co-op City" has the greatest grade-A restaurant percentage, around `r paste0(format(max(gradea_neighborhood$grade_percent) * 100, digits = 3))`%. "Sunset Park", however, has the least, around `r paste0(format(min(gradea_neighborhood$grade_percent) * 100, digits = 3))`%. "Washington Heights", where we live, takes the fourth counting from the end, around 34%, which is obviously consistent with the feeling we have towards the restaurant condition of "Washington Heights"...
 
 
 
@@ -459,9 +461,11 @@ tibble(p_fastfood_sing = lm_fastfood_tbl$pr_t[2],
 main_predictor_comp = 
   map(outcome_name, main_predictor_selection) %>%
   bind_rows()
+main_predictor_comp$outcome = colnames(combined_model)[10:12]
+main_predictor_comp
 ```
 
-We originally have two main predictors of interest, *Percentage of chain restaurants* and *Percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is `r main_predictor_comp$p_fastfood_sing[1]` and for chain_percentage is `r main_predictor_comp$p_chain_sing[1]`. 
+We originally have two main predictors of interest, *Percentage of chain restaurants* and *Percentage of fastfood restaurants*, and they are both significantly associated with the three chronic disease health oucomes when solely in the model after adjusting for other potential confounders. Taking obesity as example, the p-value for fastfood_percent is `r paste0(format(main_predictor_comp$p_fastfood_sing[1], digits = 5))` and for chain_percentage is `r main_predictor_comp$p_chain_sing[1]`. 
 
 And we also anticipated them to be highly associated with each other, to avoid collinearity, we need to make decision on which one to keep as the final main predictor. So we put the two main predictor candidates in the same model and see how their p-values change. As a result, the fastfood_percent stays significant (p=`r main_predictor_comp$p_fastfood_both[1]`) and the chain_percentage turn insignificant (p=`r main_predictor_comp$p_chain_both[1]`). 
 
@@ -492,12 +496,18 @@ percent_change = (lm_crude_tbl$estimate[2] - lm_adjusted_tbl$estimate[2]) /lm_cr
 confounder_percent_change = percent_change
 }
 
-map(outcome_name, confounder_percent_change)
+confounder_change =
+  map(outcome_name, confounder_percent_change) %>%
+  bind_rows()
+
+percent <- function(x) {
+  paste0(formatC(100 * x, digits = 3), "%")
+}
 ```
 
 Besides some biologically meaningful covariates (i.e. race, poverty, smoking status, exercise), we also hypothesize the variable *Percentage of grade A restuarants* as a potential confounder in the association between fastfood restaurants percentage and the three chronic disease health outcomes.
 
-Here, we are assessing if grade_percent is a significant confounder statistically. Using the 10% change rule of thumb, we find that after adjusting for *Percentage of grade A restuarants*, the estimates of fastfood_percent change by 18.83% for outcome obsesity, 3.23% for outcome diabetes and 31.72% for outcome stroke hospitalization.
+Here, we are assessing if grade_percent is a significant confounder statistically. Using the 10% change rule of thumb, we find that after adjusting for *Percentage of grade A restuarants*, the estimates of fastfood_percent change by `r percent(confounder_change$obesity)` for outcome obsesity, `r percent(confounder_change$diabetes)` for outcome diabetes and `r percent(confounder_change$stroke_hosp)` for outcome stroke hospitalization.
 
 Thus, regarding the final models, we are going to keep grade_percent for obsesity and stroke hospitalization, but take it out and rerun the model for the outcome diabetes.
 
@@ -507,30 +517,36 @@ Thus, regarding the final models, we are going to keep grade_percent for obsesit
 **Model 1: Obesity = fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise**
 
 ```{r obesity_model}
-lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
+lm_obesity = 
+  lm(obesity ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+lm_obesity %>%
   kable()
 ```
 
 **Model 2: Diabetes = fastfood_percent + racewhite_rate + poverty + smoking + exercise**
 
 ```{r diabetes_model}
-lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
+lm_diabetes = 
+  lm(diabetes ~ fastfood_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+lm_diabetes %>%
   kable()
 ```
 
 **Model 3: Stroke_hosp = fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise**
 
 ```{r stro_hosp_model}
-lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
-  broom::tidy() %>%
+lm_stroke =
+  lm(stroke_hosp ~ fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise, combined_model) %>%
+  broom::tidy() 
+lm_stroke %>%
   kable()
 ```
 
-We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gives the most significant results with p-value of the main predictor being 0.0005364 (<0.01). In other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants (0.1 unit increase in the percentage of fastfood restaurants) in a neighborhood is associated with 5.94% increase in the neighborhood's obesity prevalence, while adjusting for other factors.
+We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gives the most significant results with p-value of the main predictor being `r paste0(format(lm_obesity$p.value[2], digits = 5))` (<0.01). In other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants (0.1 unit increase in the percentage of fastfood restaurants) in a neighborhood is associated with `r paste0(formatC(lm_obesity$estimate[2]/10, digits = 3), "%")` increase in the neighborhood's obesity prevalence, while adjusting for other factors.
 
-The p-value of the regression coefficients for model with outcomes as diabetes/stroke are both around 0.003 (<0.01), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with 1.75% increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with increase in 57.35 stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.
+The p-value of the regression coefficients for model with outcomes as diabetes/stroke are both less than 0.01 (Diabetes p=`r lm_diabetes$p.value[2]`; Stroke p=`r lm_stroke$p.value[2]`), indicating there is a significant linear relationship between diabetese/stroke and percentage of fastfood restaurants at 1% significance level. To put in other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with `r paste0(formatC(lm_diabetes$estimate[2]/10, digits = 3), "%")` increase in the neighborhood's diabetes prevalence, while adjusting for other factors. Furthermore, every 10% increase in the number of fastfood restaurants in a neighborhood is associated with increase in `r paste0(format(lm_stroke$estimate[2]/10, digits = 3))` stroke hospitalizations per 100,000 adults in the neighborhood, while adjusting for other factors.
 
 It is reasonable that among the three health outcomes, obesity has the strongest linear association with food environment, in this case, percentage of fastfood restaurants. It is a health condition that has the most direct relation with one's diet pattern. Moreover, it has a higher prevalence than diabetes and stroke, which could lead to a lower p-value than the other two health conditions.
 
