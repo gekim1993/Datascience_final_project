@@ -524,6 +524,8 @@ lm_obesity %>%
   kable()
 ```
 
+**Fitted Model 1: Obesity = `r lm_obesity$estimate[1]` + `r lm_obesity$estimate[2]` * fastfood_percent + `r lm_obesity$estimate[3]` * grade_percent + `r lm_obesity$estimate[4]` * racewhite_rate + `r lm_obesity$estimate[5]` * poverty + `r lm_obesity$estimate[6]` * smoking + `r lm_obesity$estimate[7]` * exercise**
+
 **Model 2: Diabetes = fastfood_percent + racewhite_rate + poverty + smoking + exercise**
 
 ```{r diabetes_model}
@@ -534,6 +536,8 @@ lm_diabetes %>%
   kable()
 ```
 
+**Fitted Model 2: Diabetes = `r lm_diabetes$estimate[1]` + `r lm_diabetes$estimate[2]` * fastfood_percent + `r lm_diabetes$estimate[3]` * racewhite_rate + `r lm_diabetes$estimate[4]` * poverty + `r lm_diabetes$estimate[5]` * smoking + `r lm_diabetes$estimate[6]` * exercise**
+
 **Model 3: Stroke_hosp = fastfood_percent + grade_percent + racewhite_rate + poverty + smoking + exercise**
 
 ```{r stro_hosp_model}
@@ -543,6 +547,8 @@ lm_stroke =
 lm_stroke %>%
   kable()
 ```
+
+**Fitted Model 3: Stroke_hosp = `r lm_stroke$estimate[1]` + `r lm_stroke$estimate[2]` * fastfood_percent + `r lm_stroke$estimate[3]` * grade_percent + `r lm_stroke$estimate[4]` * racewhite_rate + `r lm_stroke$estimate[5]` * poverty + `r lm_stroke$estimate[6]` * smoking + `r lm_stroke$estimate[7]` * exercise**
 
 We have three final models each having a health outcome (prevalence of obesity, prevalence of diabetes, and stroke hospitalization rate) as the dependent variable and percentage of fastfood as the main predictor. Obesity and percentage of fastfood restuarants model gives the most significant results with p-value of the main predictor being `r paste0(format(lm_obesity$p.value[2], digits = 5))` (<0.01). In other words, at significance level of 1%, every 10% increase in the number of fastfood restaurants (0.1 unit increase in the percentage of fastfood restaurants) in a neighborhood is associated with `r paste0(formatC(lm_obesity$estimate[2]/10, digits = 3), "%")` increase in the neighborhood's obesity prevalence, while adjusting for other factors.
 
